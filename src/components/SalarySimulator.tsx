@@ -11,7 +11,7 @@ interface SalarySimulatorProps {
 }
 
 const CURRENCIES: Record<string, { code: string; symbol: string; rate: number }> = {
-  "Cameroon": { code: "XAF", symbol: "FCFA", rate: 600 },
+  "DRCongo": { code: "CDF", symbol: "FC", rate: 2800 },
   "Senegal": { code: "XOF", symbol: "FCFA", rate: 600 },
   "Ivory Coast": { code: "XOF", symbol: "FCFA", rate: 600 },
   "Gabon": { code: "XAF", symbol: "FCFA", rate: 600 },

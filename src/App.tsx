@@ -16,7 +16,7 @@ const SUPPORTED_COUNTRIES = [
   { code: "US", name: "United States", flag: "🇺🇸", currency: "USD" },
   { code: "FR", name: "France", flag: "🇫🇷", currency: "EUR" },
   { code: "CA", name: "Canada", flag: "🇨🇦", currency: "CAD" },
-  { code: "CM", name: "Cameroon", flag: "🇨🇲", currency: "FCFA" },
+  { code: "CD", name: "DRCongo", flag: "🇨🇩", currency: "CDF" },
   { code: "SN", name: "Senegal", flag: "🇸🇳", currency: "FCFA" },
   { code: "CI", name: "Ivory Coast", flag: "🇨🇮", currency: "FCFA" }
 ];
@@ -39,16 +39,11 @@ export default function App() {
     return (localStorage.getItem("propath_language") as "english" | "french") || "english";
   });
 
-  const [hasOnboarded, setHasOnboarded] = useState<boolean>(() => {
-    return !!localStorage.getItem("propath_country");
-  });
+  const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
 
   const updateCountry = (country: string) => {
     setSelectedCountry(country);
     localStorage.setItem("propath_country", country);
-    if (country) {
-      setHasOnboarded(true);
-    }
   };
 
   const updateLanguage = (lang: "english" | "french") => {
@@ -206,6 +201,7 @@ export default function App() {
   const confirmReset = () => {
     setReport(null);
     setIsAdminView(false);
+    setHasOnboarded(false);
     localStorage.removeItem("propath_active_report");
     // Clean up URL parameters if any
     const url = new URL(window.location.href);
@@ -480,7 +476,11 @@ export default function App() {
                       : "bg-slate-800 text-slate-500 cursor-not-allowed"
                   }`}
                 >
-                  <span>{selectedLanguage === "french" ? "Commencer l'évaluation" : "Proceed to Assessment"}</span>
+                  <span>
+                    {selectedLanguage === "french"
+                      ? (report ? "Accéder au Dossier" : "Commencer l'évaluation")
+                      : (report ? "Access Personal Dossier" : "Proceed to Assessment")}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </motion.div>

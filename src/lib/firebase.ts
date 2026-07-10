@@ -115,13 +115,25 @@ export async function getPartners(): Promise<any[]> {
   const colName = "partners";
   try {
     const querySnapshot = await getDocs(collection(db, colName));
-    const list = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const list = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      if (data.country === "Cameroon") {
+        data.country = "DRCongo";
+      }
+      return { id: doc.id, ...data };
+    });
     
     // Auto-seed if database has zero partners (first time boot or empty sandbox)
     if (list.length === 0) {
       await seedInitialData();
       const freshSnapshot = await getDocs(collection(db, colName));
-      return freshSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return freshSnapshot.docs.map(doc => {
+        const data = doc.data();
+        if (data.country === "Cameroon") {
+          data.country = "DRCongo";
+        }
+        return { id: doc.id, ...data };
+      });
     }
     return list;
   } catch (err) {
@@ -167,7 +179,13 @@ export async function getPrograms(): Promise<any[]> {
   const colName = "programs";
   try {
     const querySnapshot = await getDocs(collection(db, colName));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      if (data.country === "Cameroon") {
+        data.country = "DRCongo";
+      }
+      return { id: doc.id, ...data };
+    });
   } catch (err) {
     handleFirestoreError(err, OperationType.LIST, colName);
   }
@@ -351,24 +369,24 @@ async function seedInitialData() {
         country: "Canada"
       },
 
-      // Cameroon
+      // DRCongo
       {
-        id: "partner_iaic_cm",
-        name: "Institut Africain d'Informatique (IAI-Cameroun)",
-        description: "Centre d'excellence technologique de la sous-région Afrique Centrale, formant des experts de haut niveau en systèmes numériques.",
+        id: "partner_ista_cd",
+        name: "Institut Supérieur de Techniques Appliquées (ISTA-Kinshasa)",
+        description: "Centre d'excellence technologique de la RDC, formant des ingénieurs et techniciens de haut niveau en systèmes de télécommunication et informatique.",
         industry: "Cloud & AI Engineering",
-        location: "Yaoundé, Cameroun",
-        website: "https://www.iai-cameroon.com",
-        country: "Cameroon"
+        location: "Kinshasa, RDC",
+        website: "https://www.ista.ac.cd",
+        country: "DRCongo"
       },
       {
-        id: "partner_cfpd_cm",
-        name: "Centre de Formation Professionnelle de Douala",
-        description: "Institution publique majeure spécialisée dans les compétences pratiques, l'administration de réseaux et la cybersécurité.",
+        id: "partner_unikin_cd",
+        name: "Département de Mathématiques & Informatique (UNIKIN)",
+        description: "Institution publique historique formant l'élite de la recherche algorithmique, de la cryptographie et de la cybersécurité en Afrique Centrale.",
         industry: "Blockchain & Web3",
-        location: "Douala, Cameroun",
-        website: "https://www.minefop.gov.cm",
-        country: "Cameroon"
+        location: "Kinshasa, RDC",
+        website: "https://www.unikin.ac.cd",
+        country: "DRCongo"
       },
 
       // Ivory Coast
@@ -511,32 +529,32 @@ async function seedInitialData() {
         country: "Canada"
       },
 
-      // Cameroon
+      // DRCongo
       {
-        id: "program_iaic_sysadmin",
-        partnerId: "partner_iaic_cm",
-        partnerName: "Institut Africain d'Informatique (IAI-Cameroun)",
+        id: "program_ista_sysadmin",
+        partnerId: "partner_ista_cd",
+        partnerName: "Institut Supérieur de Techniques Appliquées (ISTA-Kinshasa)",
         title: "Certification Internationale en DevOps & Sécurité Cloud",
         description: "Formation de haut niveau axée sur la mise en place de serveurs hautement disponibles, l'automatisation Ansible, Docker et l'hébergement sécurisé.",
         duration: "9 Mois",
         cost: "Bourses Nationales Disponibles",
         level: "Intermediate",
-        link: "https://www.iai-cameroon.com",
+        link: "https://www.ista.ac.cd",
         trackId: "Cloud DevOps Engineer & Infrastructure Architect",
-        country: "Cameroon"
+        country: "DRCongo"
       },
       {
-        id: "program_cfpd_webdev",
-        partnerId: "partner_cfpd_cm",
-        partnerName: "Centre de Formation Professionnelle de Douala",
+        id: "program_unikin_webdev",
+        partnerId: "partner_unikin_cd",
+        partnerName: "Département de Mathématiques & Informatique (UNIKIN)",
         title: "Cursus Pratique Développeur Blockchain & Web Sécurisé",
         description: "Formation d'insertion rapide apprenant l'écriture de smart contracts Solidity et la conception d'applications décentralisées résilientes.",
         duration: "6 Mois",
         cost: "Subventionné (Frais minimes)",
         level: "Beginner",
-        link: "https://www.minefop.gov.cm",
+        link: "https://www.unikin.ac.cd",
         trackId: "DeFi Security Engineer & Smart Contract Auditor",
-        country: "Cameroon"
+        country: "DRCongo"
       },
 
       // Ivory Coast
@@ -658,7 +676,13 @@ export async function getUserClicks(): Promise<any[]> {
   const colName = "user_clicks";
   try {
     const querySnapshot = await getDocs(collection(db, colName));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      if (data.country === "Cameroon" || data.country === "cm") {
+        data.country = "DRCongo";
+      }
+      return { id: doc.id, ...data };
+    });
   } catch (err) {
     handleFirestoreError(err, OperationType.LIST, colName);
   }

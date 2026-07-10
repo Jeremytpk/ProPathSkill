@@ -973,7 +973,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                               return (
                                 <div key={name}>
                                   <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
-                                    <span className="capitalize">{name === "fr" ? "France (fr)" : name === "cm" ? "Cameroon (cm)" : name}</span>
+                                    <span className="capitalize">{name === "fr" ? "France (fr)" : name === "cm" || name === "cd" ? "DRCongo (cd)" : name === "Cameroon" ? "DRCongo" : name}</span>
                                     <span className="font-mono text-[10px] text-slate-400">{count} clicks ({pct}%)</span>
                                   </div>
                                   <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-850">
@@ -1166,7 +1166,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
                     <option value="France">France</option>
-                    <option value="Cameroon">Cameroon</option>
+                    <option value="DRCongo">DRCongo</option>
                     <option value="Senegal">Senegal</option>
                     <option value="Ivory Coast">Ivory Coast</option>
                   </select>
@@ -1282,7 +1282,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
                     <option value="France">France</option>
-                    <option value="Cameroon">Cameroon</option>
+                    <option value="DRCongo">DRCongo</option>
                     <option value="Senegal">Senegal</option>
                     <option value="Ivory Coast">Ivory Coast</option>
                   </select>
