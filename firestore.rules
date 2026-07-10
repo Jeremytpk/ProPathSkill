@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Default-deny catch-all safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Reports: Immutable sharing dossiers
+    match /reports/{reportId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
+    // 3. Partners: Publicly visible, manageable in admin simulation
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // 4. Programs: Educational and training initiatives
+    match /programs/{programId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // 5. Team Applications: Placements matching partners and users
+    match /team_applications/{applicationId} {
+      allow read, create, update, delete: if true;
+    }
+
+    // 6. User Clicks: Tracked for monetization metrics and partner reporting
+    match /user_clicks/{clickId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+  }
+}

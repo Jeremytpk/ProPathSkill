@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Partner": {
+      "title": "Partner",
+      "description": "Educational or corporate hiring partner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "industry": { "type": "string" },
+        "location": { "type": "string" },
+        "website": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "description"]
+    },
+    "Program": {
+      "title": "Program",
+      "description": "Training or educational program by a partner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "partnerName": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "duration": { "type": "string" },
+        "cost": { "type": "string" },
+        "level": { "type": "string" },
+        "link": { "type": "string" },
+        "trackId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "partnerId", "title", "description"]
+    },
+    "TeamApplication": {
+      "title": "TeamApplication",
+      "description": "User application to join a partner's team",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "partnerName": { "type": "string" },
+        "programId": { "type": "string" },
+        "programTitle": { "type": "string" },
+        "trackTitle": { "type": "string" },
+        "status": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userEmail", "partnerId", "status"]
+    },
+    "UserClick": {
+      "title": "UserClick",
+      "description": "User interaction click logged for monetization analytics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "type": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetName": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "partnerName": { "type": "string" },
+        "platform": { "type": "string" },
+        "trackTitle": { "type": "string" },
+        "country": { "type": "string" },
+        "language": { "type": "string" },
+        "industrySelections": { "type": "array", "items": { "type": "string" } },
+        "primarySuggestedTrack": { "type": "string" },
+        "primarySuggestedSector": { "type": "string" },
+        "secondSuggestedTrack": { "type": "string" },
+        "secondSuggestedSector": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["type", "targetName", "trackTitle", "country"]
+    }
+  },
+  "firestore": {
+    "/partners/{partnerId}": {
+      "schema": "Partner",
+      "description": "Collection of corporate or educational partner organizations"
+    },
+    "/programs/{programId}": {
+      "schema": "Program",
+      "description": "Collection of educational/training programs offered by partners"
+    },
+    "/team_applications/{applicationId}": {
+      "schema": "TeamApplication",
+      "description": "Collection of user applications to join partner teams"
+    },
+    "/user_clicks/{clickId}": {
+      "schema": "UserClick",
+      "description": "Collection of user click interactions on partners, courses, and programs"
+    }
+  }
+}
