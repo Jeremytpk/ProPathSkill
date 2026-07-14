@@ -11,6 +11,7 @@ import {
   ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { ProPathLogo } from "./components/ProPathLogo";
 
 const SUPPORTED_COUNTRIES = [
   { code: "US", name: "United States", flag: "🇺🇸", currency: "USD" },
@@ -219,7 +220,7 @@ export default function App() {
       {/* Decorative ambient background glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 print:hidden">
         <div className={`absolute top-[-10%] right-[10%] w-[600px] h-[600px] rounded-full blur-[130px] transition-opacity duration-300 ${theme === "dark" ? "bg-indigo-500/10 opacity-100" : "bg-indigo-500/5 opacity-80"}`} />
-        <div className={`absolute bottom-[20%] left-[10%] w-[500px] h-[500px] rounded-full blur-[120px] transition-opacity duration-300 ${theme === "dark" ? "bg-purple-500/8 opacity-100" : "bg-purple-500/3 opacity-80"}`} />
+        <div className={`absolute bottom-[20%] left-[10%] w-[500px] h-[500px] rounded-full blur-[120px] transition-opacity duration-300 ${theme === "dark" ? "bg-blue-600/8 opacity-100" : "bg-blue-600/3 opacity-80"}`} />
       </div>
 
       {/* Top Professional Header Bar */}
@@ -234,9 +235,7 @@ export default function App() {
             className={`flex items-center gap-3 select-none ${report ? "cursor-pointer group hover:opacity-90 transition-all duration-200" : ""}`}
             id="propath-logo-and-title-nav"
           >
-            <div className="w-9 h-9 rounded-xl accent-gradient flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 transition-transform group-hover:scale-105">
-              <Compass className="w-5 h-5 animate-pulse" />
-            </div>
+            <ProPathLogo className="h-[45px] w-auto rounded-[7px] transition-transform group-hover:scale-105" />
             <div>
               <span className={`text-sm font-bold font-display tracking-tight block transition-colors ${
                 theme === "dark" ? "text-white group-hover:text-indigo-200" : "text-slate-900 group-hover:text-indigo-600"
@@ -330,7 +329,7 @@ export default function App() {
           <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
             <div className="relative mb-6">
               <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin" />
-              <Compass className="absolute inset-0 m-auto w-6 h-6 text-indigo-400 animate-pulse" />
+              <ProPathLogo className="absolute inset-0 m-auto w-7 h-7 animate-pulse" />
             </div>
             <h3 className="text-lg font-bold font-display text-white">
               Retrieving Shared Vocational Dossier
@@ -388,11 +387,11 @@ export default function App() {
               >
                 {/* Decorative glows */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl" />
 
                 <div className="text-center mb-8 relative z-10">
-                  <div className="inline-flex p-3 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 mb-4">
-                    <Compass className="w-8 h-8 animate-pulse text-indigo-500" />
+                  <div className="flex justify-center mb-6">
+                    <ProPathLogo className="h-20 w-auto rounded-[15px]" />
                   </div>
                   <h2 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
                     {selectedLanguage === "french" ? "Bienvenue sur ProPath" : "Welcome to ProPath"}
@@ -502,14 +501,14 @@ export default function App() {
                     {selectedLanguage === "french" ? (
                       <>
                         Associez votre Aptitude à des <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500">
                           Métiers d'Avenir
                         </span>
                       </>
                     ) : (
                       <>
                         Map Your Aptitude to <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500">
                           High-Growth Careers
                         </span>
                       </>

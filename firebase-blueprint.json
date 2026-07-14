@@ -80,6 +80,23 @@
         "createdAt": { "type": "string" }
       },
       "required": ["type", "targetName", "trackTitle", "country"]
+    },
+    "AICourse": {
+      "title": "AICourse",
+      "description": "Interactive AI-taught vocational course generated for students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "programId": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "industry": { "type": "string" },
+        "aiTutorPersona": { "type": "string" },
+        "chapters": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "chapters"]
     }
   },
   "firestore": {
@@ -98,6 +115,10 @@
     "/user_clicks/{clickId}": {
       "schema": "UserClick",
       "description": "Collection of user click interactions on partners, courses, and programs"
+    },
+    "/ai_courses/{courseId}": {
+      "schema": "AICourse",
+      "description": "Collection of AI-generated interactive student learning paths and courses"
     }
   }
 }

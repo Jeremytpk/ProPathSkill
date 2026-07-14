@@ -2,17 +2,20 @@ import React, { useEffect, useState } from "react";
 import { EducationResource } from "../types";
 import { ExternalLink, ShieldCheck, X, ArrowRight, Hourglass } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { AICourseWorkspace } from "./AICourseWorkspace";
 
 interface RedirectionModalProps {
   resource: EducationResource | null;
   onClose: () => void;
+  language?: string;
 }
 
-export function RedirectionModal({ resource, onClose }: RedirectionModalProps) {
+export function RedirectionModal({ resource, onClose, language = "english" }: RedirectionModalProps) {
   const [countdown, setCountdown] = useState(5);
+  const isAICourse = resource?.link?.startsWith("propathskill://course/");
 
   useEffect(() => {
-    if (!resource) return;
+    if (!resource || isAICourse) return;
 
     // Reset countdown when resource is selected
     setCountdown(5);
@@ -32,9 +35,20 @@ export function RedirectionModal({ resource, onClose }: RedirectionModalProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [resource, onClose]);
+  }, [resource, onClose, isAICourse]);
 
   if (!resource) return null;
+
+  if (isAICourse) {
+    const courseId = resource.link.replace("propathskill://course/", "");
+    return (
+      <AICourseWorkspace
+        courseId={courseId}
+        onClose={onClose}
+        language={language}
+      />
+    );
+  }
 
   const handleProceedImmediately = () => {
     window.open(resource.link, "_blank", "noopener,noreferrer");

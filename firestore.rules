@@ -34,5 +34,10 @@ service cloud.firestore {
       allow read, create: if true;
       allow update, delete: if false;
     }
+
+    // 7. AI Courses: Interactive courses powered by ProPathSkill AI
+    match /ai_courses/{courseId} {
+      allow read, create, update, delete: if true;
+    }
   }
 }

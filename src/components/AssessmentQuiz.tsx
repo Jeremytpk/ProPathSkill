@@ -246,20 +246,52 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
     }
   };
 
-  // Select option for question
+  // Select option for question and auto-advance for a seamless UX
   const handleSelectOption = (questionId: string, optionId: string) => {
-    setAnswers({
-      ...answers,
-      [questionId]: optionId,
+    setAnswers((prev) => {
+      const updated = { ...prev, [questionId]: optionId };
+      
+      // Auto-advance to the next question
+      setTimeout(() => {
+        if (currentQuestionIdx < activeQuestions.length - 1) {
+          setCurrentQuestionIdx((idx) => idx + 1);
+        } else {
+          setCurrentStep("suggestions");
+        }
+      }, 250);
+      
+      return updated;
     });
   };
 
-  // Select option for deep-dive question
+  // Select option for deep-dive question and auto-advance
   const handleSelectDeepDiveOption = (questionId: string, optionId: string) => {
-    setDeepDiveAnswers({
-      ...deepDiveAnswers,
-      [questionId]: optionId,
+    setDeepDiveAnswers((prev) => {
+      const updated = { ...prev, [questionId]: optionId };
+      
+      // Auto-advance to the next deep-dive question
+      setTimeout(() => {
+        if (deepDiveQuestionIdx < deepDiveQuestions.length - 1) {
+          setDeepDiveQuestionIdx((idx) => idx + 1);
+        } else {
+          setCurrentStep("success");
+        }
+      }, 250);
+      
+      return updated;
     });
+  };
+
+  // Select a sector on the suggestions screen and auto-advance to technical deep-dive
+  const handleSelectSuggestedSector = (sectorId: string) => {
+    setSelectedSuggestedSectorId(sectorId);
+    setDeepDiveQuestionIdx(0);
+    setDeepDiveAnswers({});
+    
+    // Auto-advance immediately
+    setTimeout(() => {
+      setCurrentStep("deepdive");
+    }, 250);
   };
 
   // Next question / step
@@ -613,7 +645,7 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
                 return (
                   <motion.div
                     key={sec.id}
-                    onClick={() => setSelectedSuggestedSectorId(sec.id)}
+                    onClick={() => handleSelectSuggestedSector(sec.id)}
                     whileHover={{ y: -6, scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     className={`cursor-pointer group relative overflow-hidden rounded-2xl p-6 border transition-all duration-300 flex flex-col justify-between min-h-[290px] ${
@@ -658,6 +690,75 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
                 );
               })}
             </div>
+
+            {/* Alternative: Refuse recommendations & use initial selection */}
+            {(() => {
+              const initialSelectedSectors = sectorsList.filter(s => selectedSectors.includes(s.id));
+              if (initialSelectedSectors.length === 0) return null;
+              return (
+                <div className="mt-8 pt-6 border-t border-slate-800/60 mb-8">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 text-left">
+                    <div>
+                      <h4 className="text-sm font-bold font-display text-slate-200">
+                        {isFrench 
+                          ? "Utiliser plutôt vos sélections initiales" 
+                          : "Or proceed with one of your original choices"}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {isFrench 
+                          ? "Si vous refusez les recommandations ci-dessus, vous pouvez tester l'un des secteurs choisis au départ." 
+                          : "If you decline the AI suggestions, you can verify your skills in one of the sectors you selected initially."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {initialSelectedSectors.map((sec) => {
+                      const isSelected = selectedSuggestedSectorId === sec.id;
+                      return (
+                        <motion.div
+                          key={`initial-select-${sec.id}`}
+                          onClick={() => handleSelectSuggestedSector(sec.id)}
+                          whileHover={{ y: -3, scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={`cursor-pointer group relative overflow-hidden rounded-xl p-4 border transition-all duration-300 flex flex-col justify-between ${
+                            isSelected
+                              ? "bg-indigo-600/10 border-indigo-500 shadow-lg shadow-indigo-600/5 border"
+                              : "bg-slate-950/40 border-slate-800 hover:border-slate-700/60 hover:bg-slate-900/15"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 shrink-0 ${
+                              isSelected
+                                ? "accent-gradient text-white border-transparent"
+                                : "bg-slate-900 text-indigo-400 border-slate-800/80 group-hover:border-slate-700 group-hover:text-indigo-300"
+                            }`}>
+                              <LucideIcon name={sec.icon} size={16} />
+                            </div>
+
+                            <div className="min-w-0 flex-1 text-left">
+                              <h5 className="text-xs font-bold text-white truncate group-hover:text-indigo-200 transition">
+                                {sec.name}
+                              </h5>
+                              <span className="block text-[9px] font-mono font-semibold uppercase tracking-wider text-indigo-400 truncate">
+                                {sec.category}
+                              </span>
+                            </div>
+
+                            {/* Checkmark or empty radio */}
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                              isSelected ? "bg-indigo-500 border-indigo-400 text-white" : "border-slate-800"
+                            }`}>
+                              {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Navigation buttons */}
             <div className="flex justify-between items-center border-t border-slate-800/60 pt-6">

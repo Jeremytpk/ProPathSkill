@@ -628,25 +628,52 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
                       </div>
 
                       <div className="mt-5 pt-4 border-t border-slate-850/60 flex items-center justify-between gap-2.5">
-                        <a
-                          href={ensureAbsoluteUrl(pr.link)}
-                          target="_blank"
-                          referrerPolicy="no-referrer"
-                          onClick={() => {
-                            logUserClick({
-                              ...getCurrentUserClickBase(),
-                              type: "program_syllabus_click",
-                              targetId: pr.id,
-                              targetName: pr.title,
-                              partnerId: pr.partnerId,
-                              partnerName: partner?.name || pr.partnerName,
-                            });
-                          }}
-                          className="text-xs text-slate-400 hover:text-white font-mono flex items-center gap-1"
-                        >
-                          <span>{t.syllabus}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                        {pr.link && pr.link.startsWith("propathskill://") ? (
+                          <button
+                            onClick={() => {
+                              setSelectedResource({
+                                id: pr.id,
+                                name: pr.title,
+                                link: pr.link,
+                                platform: partner?.name || pr.partnerName,
+                                duration: pr.duration,
+                                type: "Course"
+                              });
+                              logUserClick({
+                                ...getCurrentUserClickBase(),
+                                type: "program_syllabus_click",
+                                targetId: pr.id,
+                                targetName: pr.title,
+                                partnerId: pr.partnerId,
+                                partnerName: partner?.name || pr.partnerName,
+                              });
+                            }}
+                            className="text-xs text-indigo-400 hover:text-indigo-300 font-mono flex items-center gap-1 cursor-pointer transition"
+                          >
+                            <span>{isFrench ? "Syllabus & Cours (Interne)" : "Syllabus & Course (Native)"}</span>
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+                          </button>
+                        ) : (
+                          <a
+                            href={ensureAbsoluteUrl(pr.link)}
+                            target="_blank"
+                            referrerPolicy="no-referrer"
+                            onClick={() => {
+                              logUserClick({
+                                ...getCurrentUserClickBase(),
+                                type: "program_syllabus_click",
+                                targetId: pr.id,
+                                targetName: pr.title,
+                                partnerId: pr.partnerId,
+                                partnerName: partner?.name || pr.partnerName,
+                              });
+                            }}
+                            className="text-xs text-slate-400 hover:text-white font-mono flex items-center gap-1"
+                          >
+                            <span>{t.syllabus}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
 
                         <button
                           onClick={() => {
@@ -798,6 +825,7 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
       <RedirectionModal
         resource={selectedResource}
         onClose={() => setSelectedResource(null)}
+        language={selectedLanguage}
       />
 
       {/* SECURE APPLICATION PLACEMENT MODAL */}

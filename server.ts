@@ -33,6 +33,19 @@ if (apiKey) {
   console.log("No GEMINI_API_KEY environment variable found. Fallback mode active.");
 }
 
+// Helper to wrap a promise with a timeout
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutErrorMsg: string): Promise<T> {
+  let timeoutId: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(timeoutErrorMsg));
+    }, timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeoutId);
+  });
+}
+
 // Helper to generate a baseline robust fallback if Gemini is offline/missing
 function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, string>, country = "United States", language = "english"): any[] {
   const isFrench = language.toLowerCase() === "french";
@@ -251,7 +264,9 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
         art: "Fine Arts Director & Creative Lead",
         electrical: "Industrial Automation & Smart Grid Lead",
         carpentry: "Master Craftsman & Restoration Lead",
-        automotive: "Electric Vehicle Drivetrain Engineer"
+        automotive: "Electric Vehicle Drivetrain Engineer",
+        digitalmarketing: "Growth Hacking & Digital Marketing Director",
+        contentcreation: "Social Media Strategist & Creative Content Director"
       };
       const namesMapFr: Record<string, string> = {
         biotech: "Chef de Projet Bioinformatique",
@@ -261,7 +276,9 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
         art: "Directeur Créatif & Art Numérique",
         electrical: "Ingénieur d'Automatisation Industrielle & Électricité",
         carpentry: "Maître Artisan Charpentier & Éco-Construction",
-        automotive: "Ingénieur Motorisation Électrique & Diagnostic Auto"
+        automotive: "Ingénieur Motorisation Électrique & Diagnostic Auto",
+        digitalmarketing: "Directeur Marketing Digital & Growth Hacking",
+        contentcreation: "Stratège Réseaux Sociaux & Directeur Création de Contenu"
       };
       
       const categoryMapEn: Record<string, string> = {
@@ -272,7 +289,9 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
         art: "Fine Arts & Creative Media",
         electrical: "Electrical & Smart Grid Systems",
         carpentry: "Artisanal Carpentry & Construction",
-        automotive: "Automotive Technology & Mechanics"
+        automotive: "Automotive Technology & Mechanics",
+        digitalmarketing: "Digital Marketing & Growth Hacking",
+        contentcreation: "Social Media & Content Production"
       };
       const categoryMapFr: Record<string, string> = {
         biotech: "Biotechnologies & Génomique",
@@ -282,7 +301,9 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
         art: "Beaux-Arts & Médias Créatifs",
         electrical: "Systèmes Électriques & Réseaux",
         carpentry: "Charpenterie Artisanale & Éco-Construction",
-        automotive: "Technologie Automobile & Mécanique"
+        automotive: "Technologie Automobile & Mécanique",
+        digitalmarketing: "Marketing Digital & Growth Hacking",
+        contentcreation: "Réseaux Sociaux & Production de Contenu"
       };
 
       const title = isFrench ? (namesMapFr[secId] || "Architecte de Solutions Techniques") : (namesMapEn[secId] || "Technical Solutions Architect");
@@ -370,6 +391,36 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
         educationalResources = [
           { name: "Electric and Hybrid Vehicles", platform: "Lund University Coursera", duration: "6 weeks", link: "https://www.coursera.org/learn/electric-hybrid-vehicles", type: "Course" },
           { name: "Automotive Technology & Maintenance", platform: "Udemy", duration: "15 hours", link: "https://www.udemy.com/course/car-maintenance-and-repair/", type: "Course" }
+        ];
+      } else if (secId === "digitalmarketing") {
+        description = isFrench
+          ? "Conçoit et optimise des campagnes de marketing multi-canaux, gère le SEO/SEM, l'acquisition d'utilisateurs et l'analyse de données de performance pour stimuler la croissance."
+          : "Spearheads cross-channel marketing campaigns, user acquisition funnels, SEO/SEM performance metrics, and growth-hacking strategies using data-driven platforms.";
+        skillsPredicted = [
+          { name: isFrench ? "Optimisation des Conversions (CRO)" : "Conversion Rate Optimization (CRO)", current: 20, predicted: 90 },
+          { name: isFrench ? "SEO & Acquisition Organique" : "SEO & Organic Acquisition", current: 30, predicted: 95 },
+          { name: isFrench ? "Campagnes de Publicité Payante" : "Paid Media & PPC Campaigns", current: 15, predicted: 88 },
+          { name: isFrench ? "Analyse de Données Marketing" : "Marketing Data Analytics", current: 25, predicted: 85 },
+          { name: isFrench ? "Marketing d'Influence" : "Influencer & Affiliate Marketing", current: 35, predicted: 80 }
+        ];
+        educationalResources = [
+          { name: "Google Digital Marketing & E-commerce Certificate", platform: "Coursera", duration: "6 months", link: "https://www.coursera.org/professional-certificates/google-digital-marketing-ecommerce", type: "Professional Certificate" },
+          { name: "Growth Hacking Masterclass", platform: "Udemy", duration: "12 hours", link: "https://www.udemy.com/", type: "Course" }
+        ];
+      } else if (secId === "contentcreation") {
+        description = isFrench
+          ? "Dirige la création de contenu visuel et écrit attrayant sur TikTok, YouTube, Instagram, rédige des textes persuasifs et développe la présence de marque de manière virale."
+          : "Directs viral short-form and long-form video production, copywriting, social media community building, and cross-platform storytelling strategies for leading brands.";
+        skillsPredicted = [
+          { name: isFrench ? "Montage Vidéo Mobile (CapCut/Premiere)" : "Mobile Video Editing (CapCut/Premiere)", current: 35, predicted: 95 },
+          { name: isFrench ? "Rédaction Persuasive & Copywriting" : "Copywriting & Storytelling", current: 30, predicted: 92 },
+          { name: isFrench ? "Gestion de Communauté & Engagement" : "Community Management", current: 25, predicted: 88 },
+          { name: isFrench ? "Production de Formats Courts (Reels/TikTok)" : "Short-form Content Formats (Reels/TikTok)", current: 40, predicted: 96 },
+          { name: isFrench ? "Design Graphique & Canaux Visuels" : "Visual Graphic Design & Branding", current: 20, predicted: 82 }
+        ];
+        educationalResources = [
+          { name: "Social Media Marketing Specialization", platform: "Meta Coursera", duration: "5 months", link: "https://www.coursera.org/specializations/social-media-marketing-meta", type: "Specialization" },
+          { name: "Viral Video Creation Guide", platform: "freeCodeCamp", duration: "6 hours", link: "https://www.freecodecamp.org/", type: "Video Tutorial" }
         ];
       }
 
@@ -484,8 +535,357 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
     });
   }
 
-  return tracks.slice(0, 3);
+  return ensureProPathSkillForMarketingAndSocialMedia(tracks.slice(0, 3), language);
 }
+
+// Helper to ensure ProPathSkill is always in the educational resources list for digital marketing and social media
+function ensureProPathSkillForMarketingAndSocialMedia(recommendedTracks: any[], language: string) {
+  if (!recommendedTracks || !Array.isArray(recommendedTracks)) return recommendedTracks;
+
+  const isFrench = language.toLowerCase() === "french";
+
+  return recommendedTracks.map((track) => {
+    if (!track) return track;
+
+    const sectorId = (track.sector || "").toLowerCase();
+    const category = (track.category || "").toLowerCase();
+    const title = (track.title || "").toLowerCase();
+    const desc = (track.description || "").toLowerCase();
+
+    const isMarketingOrSocialMedia =
+      sectorId === "digitalmarketing" ||
+      sectorId === "contentcreation" ||
+      category.includes("marketing") ||
+      category.includes("social") ||
+      category.includes("médias") ||
+      category.includes("media") ||
+      category.includes("content") ||
+      category.includes("contenu") ||
+      title.includes("marketing") ||
+      title.includes("social") ||
+      title.includes("media") ||
+      title.includes("médias") ||
+      title.includes("content") ||
+      title.includes("contenu") ||
+      title.includes("growth") ||
+      desc.includes("marketing") ||
+      desc.includes("social") ||
+      desc.includes("médias") ||
+      desc.includes("media") ||
+      desc.includes("content") ||
+      desc.includes("contenu") ||
+      desc.includes("growth");
+
+    if (isMarketingOrSocialMedia) {
+      if (!track.educationalResources) {
+        track.educationalResources = [];
+      }
+
+      // Check if it already has a ProPathSkill resource
+      const hasProPathSkill = track.educationalResources.some(
+        (res: any) =>
+          (res.platform && res.platform.toLowerCase().includes("propath")) ||
+          (res.link && res.link.startsWith("propathskill://"))
+      );
+
+      if (!hasProPathSkill) {
+        const nativeResource = isFrench
+          ? {
+              name: "ProPathSkill - Marketing Digital & Médias Sociaux (Cours Certifiant)",
+              platform: "ProPathSkill",
+              duration: "À votre rythme (4 Semaines)",
+              link: "propathskill://course/digital_marketing_native",
+              type: "Cours interactif"
+            }
+          : {
+              name: "ProPathSkill - Digital Marketing & Social Media (Certifying Course)",
+              platform: "ProPathSkill",
+              duration: "Self-Paced (4 Weeks)",
+              link: "propathskill://course/digital_marketing_native",
+              type: "Interactive Course"
+            };
+        track.educationalResources.unshift(nativeResource);
+      }
+    }
+    return track;
+  });
+}
+
+// Helper to generate an interactive fallback course when Gemini is offline
+function getFallbackCourseContent(title: string, industry: string, isFrench: boolean) {
+  return {
+    title: title || (isFrench ? "Cours d'Éléments Clés ProPath" : "ProPath Core Elements Course"),
+    description: isFrench 
+      ? `Un cours interactif complet conçu pour maîtriser les bases de : ${title || industry}.`
+      : `An intensive interactive course designed to master core concepts of: ${title || industry}.`,
+    aiTutorPersona: isFrench 
+      ? "Socrates, votre guide d'intelligence artificielle dédié de ProPath."
+      : "Socrates, your dedicated ProPath AI learning mentor.",
+    chapters: [
+      {
+        id: "chap_1",
+        title: isFrench ? "Chapitre 1 : Les Fondements Fondamentaux" : "Chapter 1: Foundational Core Principles",
+        content: isFrench
+          ? `Bienvenue dans le premier chapitre de ${title}. Ce module couvre les concepts d'introduction clés nécessaires pour exceller dans le domaine. Vous explorerez l'évolution de l'industrie, les outils de base indispensables et les cadres analytiques utilisés par les professionnels chevronnés. L'objectif principal est de développer un état d'esprit structuré et axé sur les résultats.`
+          : `Welcome to the first chapter of ${title}. This module covers critical entry-level concepts required to excel in the domain. You will explore industry evolution, indispensable toolkits, and analytical frameworks used by seasoned professionals. The core focus is establishing a structured, growth-oriented mindset.`,
+        quiz: {
+          question: isFrench 
+            ? "Quel est l'objectif principal de ce premier chapitre ?" 
+            : "What is the primary objective of this foundational chapter?",
+          options: isFrench
+            ? [
+                "Développer un état d'esprit structuré et axé sur les résultats",
+                "Mémoriser des formules mathématiques complexes",
+                "Remplacer les mentors humains par des scripts d'automatisation",
+                "Ignorer les cadres de travail existants"
+              ]
+            : [
+                "Establish a structured, growth-oriented mindset",
+                "Memorize complex formulas without practical use cases",
+                "Replace human collaboration with automation scripts",
+                "Avoid reading the curated roadmap resources"
+              ],
+          correctIndex: 0,
+          explanation: isFrench
+            ? "L'apprentissage initial doit se concentrer sur l'acquisition d'un état d'esprit solide et de bases méthodologiques robustes avant de plonger dans les détails techniques complexes."
+            : "Initial learning must focus on acquiring a resilient mental model and solid structural principles before embarking on high-complexity technical specializations."
+        }
+      },
+      {
+        id: "chap_2",
+        title: isFrench ? "Chapitre 2 : Scénarios Pratiques de Terrain" : "Chapter 2: Applied Field Scenarios",
+        content: isFrench
+          ? `Dans ce deuxième chapitre, nous passons de la théorie à la pratique de terrain. Nous examinons des études de cas réelles d'échecs de projets et comment des correctifs stratégiques ont été déployés. La clé du succès professionnel est de savoir adapter sa vision théorique aux contraintes concrètes (budget, temps, ressources humaines) et aux imprévus opérationnels.`
+          : `In this second chapter, we bridge the gap between abstract theory and applied field practices. We analyze real-world case studies of project failures and see how strategic adjustments were made. The key to career growth is learning how to balance theoretical models with actual constraints (budget, timeline, human variables) and operational events.`,
+        quiz: {
+          question: isFrench
+            ? "Selon ce chapitre, quelle est la clé du succès professionnel ?"
+            : "According to this chapter, what is key to professional success?",
+          options: isFrench
+            ? [
+                "Appliquer aveuglément des modèles théoriques",
+                "Savoir adapter sa vision théorique aux contraintes concrètes",
+                "Attendre que d'autres résolvent les problèmes",
+                "Minimiser l'importance de l'analyse opérationnelle"
+              ]
+            : [
+                "Blindly executing theoretical models without flexibility",
+                "Learning to balance theoretical insights with concrete, real-world constraints",
+                "Waiting for stakeholders to resolve blockages",
+                "Minimizing the importance of hands-on operational analytics"
+              ],
+          correctIndex: 1,
+          explanation: isFrench
+            ? "L'excellence professionnelle réside dans la capacité à surmonter les imprévus réels en adaptant intelligemment la théorie."
+            : "True professional expertise lies in adapting conceptual models to actual constraints and solving real challenges on the ground."
+        }
+      },
+      {
+        id: "chap_3",
+        title: isFrench ? "Chapitre 3 : Maîtrise Avancée & Prochaines Étapes" : "Chapter 3: Advanced Mastery & Next Steps",
+        content: isFrench
+          ? `Dans ce dernier module de formation, nous explorons comment intégrer de manière durable vos compétences dans votre parcours de carrière. Nous analyserons les techniques d'optimisation de performance, la gestion de projet avancée et comment obtenir des certifications professionnelles de haut niveau. Vous êtes maintenant prêt à exceller !`
+          : `In this final training module, we explore how to sustainably integrate your skills into your long-term career path. We will analyze high-performance optimization techniques, advanced project management, and how to acquire elite industry certifications. You are now prepared to excel!`,
+        quiz: {
+          question: isFrench
+            ? "Quel est l'objectif du dernier chapitre de formation ?"
+            : "What is the focus of this final training chapter?",
+          options: isFrench
+            ? [
+                "Intégrer durablement vos compétences dans votre parcours professionnel",
+                "Reprendre la formation depuis le début",
+                "Abandonner l'acquisition de nouvelles certifications",
+                "Ignorer les opportunités locales de placement"
+              ]
+            : [
+                "Sustainably integrate your skills into your long-term career path",
+                "Restart the training program from chapter one",
+                "Avoid acquiring professional certifications",
+                "Disregard local placement opportunities"
+              ],
+          correctIndex: 0,
+          explanation: isFrench
+            ? "Le but ultime du cours est de vous aider à appliquer efficacement et durablement vos nouvelles compétences sur le marché du travail réel."
+            : "The ultimate goal of the course is to help you successfully and sustainably apply your newly acquired skills in the real job market."
+        }
+      }
+    ]
+  };
+}
+
+// REST API Route to generate a professional interactive course via Gemini API
+app.post("/api/generate-course-content", async (req, res) => {
+  try {
+    const { title, industry, language } = req.body;
+    const chosenLanguage = language || "english";
+    const isFrench = chosenLanguage.toLowerCase() === "french";
+
+    console.log(`Generating AI course content for: "${title}" (Industry: ${industry}, Language: ${chosenLanguage})`);
+
+    if (!aiClient) {
+      console.log("No Gemini API key available. Serving high-fidelity fallback course.");
+      const fallbackCourse = getFallbackCourseContent(title, industry, isFrench);
+      return res.json(fallbackCourse);
+    }
+
+    const systemInstruction = `You are a world-class AI learning architect and vocational professor.
+Generate a comprehensive, high-fidelity interactive learning course structured in JSON format.
+The course must be tailored to the title and industry provided.
+The course must have exactly 3 high-quality, rich chapters.
+Each chapter must include highly detailed educational lesson text (the "content" field, which must be multiple paragraphs of rich pedagogical information, with no placeholder text) and 1 multiple-choice "quiz" question testing the chapter's material.
+Write the entire output in ${isFrench ? "French" : "English"} (including titles, description, content, quiz, answers, and tutor persona).
+Make the AI Tutor Persona very engaging, supportive, and knowledgeable.`;
+
+    const promptText = `Generate a course for the title: "${title}" in the industry: "${industry}".
+The JSON must follow the schema:
+{
+  "title": "...",
+  "description": "...",
+  "aiTutorPersona": "...",
+  "chapters": [
+    {
+      "id": "...",
+      "title": "...",
+      "content": "...",
+      "quiz": {
+        "question": "...",
+        "options": ["...", "...", "...", "..."],
+        "correctIndex": 0,
+        "explanation": "..."
+      }
+    }
+  ]
+}`;
+
+    const response = await withTimeout(
+      aiClient.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: promptText,
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              aiTutorPersona: { type: Type.STRING },
+              chapters: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    title: { type: Type.STRING },
+                    content: { type: Type.STRING },
+                    quiz: {
+                      type: Type.OBJECT,
+                      properties: {
+                        question: { type: Type.STRING },
+                        options: {
+                          type: Type.ARRAY,
+                          items: { type: Type.STRING }
+                        },
+                        correctIndex: { type: Type.INTEGER },
+                        explanation: { type: Type.STRING }
+                      },
+                      required: ["question", "options", "correctIndex", "explanation"]
+                    }
+                  },
+                  required: ["id", "title", "content", "quiz"]
+                }
+              }
+            },
+            required: ["title", "description", "aiTutorPersona", "chapters"]
+          }
+        }
+      }),
+      15000,
+      "Course generation timed out"
+    );
+
+    const generatedJson = JSON.parse(response.text || "{}");
+    return res.json(generatedJson);
+  } catch (err: any) {
+    console.error("Error generating course content:", err);
+    // Serve fallback on error
+    try {
+      const { title, industry, language } = req.body || {};
+      const isFrench = (language || "english").toLowerCase() === "french";
+      const fallbackCourse = getFallbackCourseContent(title, industry, isFrench);
+      return res.json(fallbackCourse);
+    } catch (_) {
+      return res.status(500).json({ error: "Failed to generate course content." });
+    }
+  }
+});
+
+// REST API Route to ask tutor a question about course content
+app.post("/api/ask-tutor", async (req, res) => {
+  try {
+    const { question, courseContext, tutorPersona, chatHistory, language } = req.body;
+    const isFrench = (language || "english").toLowerCase() === "french";
+
+    if (!aiClient) {
+      // Offline high-fidelity fallback responder
+      const q = question.toLowerCase();
+      let reply = "";
+      if (isFrench) {
+        if (q.includes("bonjour") || q.includes("salut")) {
+          reply = `Bonjour ! Je suis ${tutorPersona || "votre tuteur"}. Comment puis-je vous aider aujourd'hui avec ce module ?`;
+        } else if (q.includes("quiz") || q.includes("question")) {
+          reply = "Le quiz teste vos connaissances sur ce chapitre. Prenez le temps de lire attentivement le texte avant de répondre.";
+        } else if (q.includes("chapitre") || q.includes("cours")) {
+          reply = "Ce cours est structuré pour vous donner les compétences pratiques dont vous avez besoin sur le terrain. N'hésitez pas à relire les sections clés !";
+        } else {
+          reply = `C'est une excellente question concernant ce cours. N'oubliez pas que dans le cadre de notre étude, la pratique sur le terrain et la maîtrise des bases sont indispensables pour réussir votre transition de carrière.`;
+        }
+      } else {
+        if (q.includes("hello") || q.includes("hi")) {
+          reply = `Hello! I am ${tutorPersona || "your tutor"}. How can I assist you with this lesson today?`;
+        } else if (q.includes("quiz") || q.includes("question")) {
+          reply = "The quiz is designed to test your core understanding. Make sure to review the lesson text carefully before picking your answer!";
+        } else if (q.includes("chapter") || q.includes("course") || q.includes("lesson")) {
+          reply = "This lesson covers key vocational skills designed for real-world impact. Reviewing the paragraphs above will help solidify your knowledge!";
+        } else {
+          reply = `That is an excellent question. Remember that in the context of this study course, active learning and applying these concepts to field scenarios is the key to accelerating your career.`;
+        }
+      }
+      return res.json({ response: reply });
+    }
+
+    const systemInstruction = `You are an interactive AI tutor named "${tutorPersona || "Socrates"}".
+You are teaching a professional vocational course.
+Answer the student's question accurately, concisely, and encouragingly, using the course details provided as context.
+Course context: ${JSON.stringify(courseContext || "")}
+Write the response in ${isFrench ? "French" : "English"}. Keep it friendly, educational, and structured with paragraphs.`;
+
+    const contents = [
+      ...(chatHistory || []).map((msg: any) => ({
+        role: msg.sender === "user" ? "user" : "model",
+        parts: [{ text: msg.text }]
+      })),
+      { role: "user", parts: [{ text: question }] }
+    ];
+
+    const response = await withTimeout(
+      aiClient.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents,
+        config: {
+          systemInstruction
+        }
+      }),
+      10000,
+      "Tutor chat timed out"
+    );
+
+    return res.json({ response: response.text || "I'm here to help." });
+  } catch (err) {
+    console.error("Error in ask-tutor API:", err);
+    return res.json({ response: "I am having trouble connecting right now, but please review the lesson content and try your question again." });
+  }
+});
 
 // REST API Route to generate career roadmap via Gemini API
 app.post("/api/generate-roadmap", async (req, res) => {
@@ -559,95 +959,99 @@ Respond STRICTLY with a valid JSON object matching the requested schema. Ensure 
     let delay = 1000;
     while (retries > 0) {
       try {
-        response = await aiClient.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: promptText,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                recommendedTracks: {
-                  type: Type.ARRAY,
-                  description: "The list of 2 custom recommended career tracks.",
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      id: { type: Type.STRING },
-                      title: { type: Type.STRING },
-                      category: { type: Type.STRING },
-                      sector: { type: Type.STRING },
-                      matchScore: { type: Type.NUMBER },
-                      description: { type: Type.STRING },
-                      demandLevel: { type: Type.STRING },
-                      salaryTimeline: {
-                        type: Type.ARRAY,
-                        items: {
-                          type: Type.OBJECT,
-                          properties: {
-                            year: { type: Type.INTEGER },
-                            role: { type: Type.STRING },
-                            salary: { type: Type.INTEGER }
-                          },
-                          required: ["year", "role", "salary"]
-                        }
+        response = await withTimeout(
+          aiClient.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: promptText,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                  recommendedTracks: {
+                    type: Type.ARRAY,
+                    description: "The list of 2 custom recommended career tracks.",
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        id: { type: Type.STRING },
+                        title: { type: Type.STRING },
+                        category: { type: Type.STRING },
+                        sector: { type: Type.STRING },
+                        matchScore: { type: Type.NUMBER },
+                        description: { type: Type.STRING },
+                        demandLevel: { type: Type.STRING },
+                        salaryTimeline: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              year: { type: Type.INTEGER },
+                              role: { type: Type.STRING },
+                              salary: { type: Type.INTEGER }
+                            },
+                            required: ["year", "role", "salary"]
+                          }
+                        },
+                        skillsPredicted: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              name: { type: Type.STRING },
+                              current: { type: Type.INTEGER },
+                              predicted: { type: Type.INTEGER }
+                            },
+                            required: ["name", "current", "predicted"]
+                          }
+                        },
+                        certificationRoadmap: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              name: { type: Type.STRING },
+                              provider: { type: Type.STRING },
+                              difficulty: { type: Type.STRING },
+                              time: { type: Type.STRING }
+                            },
+                            required: ["name", "provider", "difficulty", "time"]
+                          }
+                        },
+                        educationalResources: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              name: { type: Type.STRING },
+                              platform: { type: Type.STRING },
+                              duration: { type: Type.STRING },
+                              link: { type: Type.STRING },
+                              type: { type: Type.STRING }
+                            },
+                            required: ["name", "platform", "duration", "link", "type"]
+                          }
+                        },
+                        shortTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        mediumTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        longTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } }
                       },
-                      skillsPredicted: {
-                        type: Type.ARRAY,
-                        items: {
-                          type: Type.OBJECT,
-                          properties: {
-                            name: { type: Type.STRING },
-                            current: { type: Type.INTEGER },
-                            predicted: { type: Type.INTEGER }
-                          },
-                          required: ["name", "current", "predicted"]
-                        }
-                      },
-                      certificationRoadmap: {
-                        type: Type.ARRAY,
-                        items: {
-                          type: Type.OBJECT,
-                          properties: {
-                            name: { type: Type.STRING },
-                            provider: { type: Type.STRING },
-                            difficulty: { type: Type.STRING },
-                            time: { type: Type.STRING }
-                          },
-                          required: ["name", "provider", "difficulty", "time"]
-                        }
-                      },
-                      educationalResources: {
-                        type: Type.ARRAY,
-                        items: {
-                          type: Type.OBJECT,
-                          properties: {
-                            name: { type: Type.STRING },
-                            platform: { type: Type.STRING },
-                            duration: { type: Type.STRING },
-                            link: { type: Type.STRING },
-                            type: { type: Type.STRING }
-                          },
-                          required: ["name", "platform", "duration", "link", "type"]
-                        }
-                      },
-                      shortTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } },
-                      mediumTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } },
-                      longTermTimeline: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    },
-                    required: [
-                      "id", "title", "category", "sector", "matchScore", "description",
-                      "demandLevel", "salaryTimeline", "skillsPredicted",
-                      "certificationRoadmap", "educationalResources",
-                      "shortTermTimeline", "mediumTermTimeline", "longTermTimeline"
-                    ]
+                      required: [
+                        "id", "title", "category", "sector", "matchScore", "description",
+                        "demandLevel", "salaryTimeline", "skillsPredicted",
+                        "certificationRoadmap", "educationalResources",
+                        "shortTermTimeline", "mediumTermTimeline", "longTermTimeline"
+                      ]
+                    }
                   }
-                }
-              },
-              required: ["recommendedTracks"]
+                },
+                required: ["recommendedTracks"]
+              }
             }
-          }
-        });
+          }),
+          15000,
+          "Roadmap generation timed out"
+        );
 
         const jsonText = response.text;
         if (!jsonText) {
@@ -655,6 +1059,9 @@ Respond STRICTLY with a valid JSON object matching the requested schema. Ensure 
         }
 
         const data = JSON.parse(jsonText);
+        if (data && data.recommendedTracks) {
+          data.recommendedTracks = ensureProPathSkillForMarketingAndSocialMedia(data.recommendedTracks, chosenLanguage);
+        }
         return res.json(data);
       } catch (err: any) {
         retries--;

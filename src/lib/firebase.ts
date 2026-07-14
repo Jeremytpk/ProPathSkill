@@ -630,6 +630,124 @@ async function seedInitialData() {
       });
     }
 
+    // Seeding Digital Marketing & Social Media AI Native Course (English)
+    const digitalMarketingNativeCourse = {
+      title: "Digital Marketing & Social Media Content Strategy",
+      description: "Master multi-channel acquisition, growth hacking loops, and professional content creation workflows guided by ProPathSkill AI mentors.",
+      industry: "Digital Marketing & Social Media",
+      partnerId: "partner_propath_native",
+      programId: "program_propath_dm_native",
+      aiTutorPersona: "ProPath AI Growth Advisor",
+      chapters: [
+        {
+          title: "Foundations of Organic Acquisition & SEO",
+          content: "Organic growth starts with identifying high-intent keywords and matching search intent with premium educational content. In this chapter, you will learn the mechanics of search engine spiders, the math behind PageRank and link profiles, and how modern search platforms optimize search results with NLP engines.\n\nKey pillars:\n1. Keyword Intent Mapping (Informational, Navigational, Transactional)\n2. Technical SEO Crawlability & Schema Markup\n3. Backlink Velocity & Domain Authority Modeling",
+          quiz: {
+            question: "Which keyword type exhibits the highest immediate commercial intent?",
+            options: [
+              "Informational keyword (e.g., 'what is marketing')",
+              "Transactional keyword (e.g., 'buy digital marketing course online')",
+              "Navigational keyword (e.g., 'ProPath login')",
+              "Branded keyword with general interest"
+            ],
+            correctIndex: 1
+          }
+        },
+        {
+          title: "Social Media Algorithms & Viral Copywriting",
+          content: "Viral distribution on TikTok, Instagram, and YouTube is governed by dynamic recommendation engines. These algorithms measure instantaneous engagement, view duration, retention curves, and share velocities.\n\nTo capture consumer attention in a highly saturated feed, you must write compelling hooks and structure persuasive visual narratives:\n1. The 3-Second Hook (Visual and Textual Contrast)\n2. The Tension Arc (Conflict, Climax, Resolution)\n3. Clear CTA (Call To Action) Integration",
+          quiz: {
+            question: "Which metric is most highly weighted by modern video feed recommendation algorithms to sustain viral reach?",
+            options: [
+              "The number of likes on a video",
+              "Video file size and upload resolution",
+              "Audience retention rate and average watch duration percentage",
+              "The time of day the video was posted"
+            ],
+            correctIndex: 2
+          }
+        },
+        {
+          title: "Marketing Data Analytics & Conversion Optimization",
+          content: "Without data modeling, creative campaigns are a gamble. Growth hacking relies on clean tracking pipelines, conversion rate optimization (CRO), and A/B testing frameworks to validate hypotheses.\n\nBy measuring Customer Acquisition Cost (CAC) against Lifetime Value (LTV), you can optimize campaign spends and maximize return on investment (ROI):\n1. Event-based tracking and UTM structures\n2. Defining and designing A/B test experiments\n3. Scaling high-performing customer acquisition funnels",
+          quiz: {
+            question: "If a marketing campaign has a high Customer Acquisition Cost (CAC) that exceeds its Customer Lifetime Value (LTV), what is the long-term implication?",
+            options: [
+              "The company will grow highly profitable over time",
+              "The company is losing money on every acquired customer and the funnel is unsustainable",
+              "The website conversion rate will automatically increase to balance the cost",
+              "The ad platform will refund the difference to the company"
+            ],
+            correctIndex: 1
+          }
+        }
+      ]
+    };
+
+    await setDoc(doc(db, "ai_courses", "digital_marketing_native"), {
+      ...digitalMarketingNativeCourse,
+      createdAt: new Date().toISOString()
+    });
+
+    // Seeding Digital Marketing & Social Media AI Native Course (French)
+    const digitalMarketingNativeCourseFR = {
+      title: "Stratégie de Marketing Digital & Création de Contenu",
+      description: "Maîtrisez l'acquisition multi-canal, les boucles de growth hacking et les processus de création de contenu professionnel, guidés par les mentors IA de ProPathSkill.",
+      industry: "Marketing Digital & Médias Sociaux",
+      partnerId: "partner_propath_native",
+      programId: "program_propath_dm_native",
+      aiTutorPersona: "Conseiller de Croissance IA ProPath",
+      chapters: [
+        {
+          title: "Fondements de l'Acquisition Organique & SEO",
+          content: "La croissance organique commence par l'identification des mots-clés à forte intention et la mise en correspondance de l'intention de recherche avec un contenu éducatif de premier ordre. Dans ce chapitre, vous découvrirez les mécanismes des robots des moteurs de recherche, les calculs derrière le PageRank et les profils de liens, et comment les moteurs modernes optimisent la pertinence grâce au traitement automatique du langage (NLP).\n\nPilliers clés :\n1. Cartographie de l'intention des mots-clés (Informative, Navigationnelle, Transactionnelle)\n2. Optimisation technique pour l'indexation (SEO technique et données structurées)\n3. Vélocité des backlinks et autorité de domaine",
+          quiz: {
+            question: "Quel type de mot-clé présente l'intention commerciale immédiate la plus forte ?",
+            options: [
+              "Un mot-clé informatif (ex. : 'qu'est-ce que le marketing')",
+              "Un mot-clé transactionnel (ex. : 'acheter formation marketing digital')",
+              "Un mot-clé de marque (ex. : 'ProPath connexion')",
+              "Un mot-clé de navigation générale"
+            ],
+            correctIndex: 1
+          }
+        },
+        {
+          title: "Algorithmes des Médias Sociaux & Rédaction Persuasive",
+          content: "La distribution virale sur TikTok, Instagram et YouTube est régie par des moteurs de recommandation dynamiques. Ces algorithmes mesurent l'engagement instantané, la durée de visionnage, les courbes de rétention et la vélocité des partages.\n\nPour capter l'attention de l'utilisateur dans un flux saturé, vous devez concevoir des accroches percutantes et structurer des récits visuels captivants :\n1. L'accroche des 3 premières secondes (contraste visuel et textuel)\n2. L'arc de tension narrative (conflit, climax, résolution)\n3. Intégration claire d'un appel à l'action (CTA)",
+          quiz: {
+            question: "Quel indicateur est le plus valorisé par les algorithmes de recommandation vidéo pour propager un contenu de manière virale ?",
+            options: [
+              "Le nombre de likes sur une vidéo",
+              "La taille du fichier vidéo et sa résolution d'encodage",
+              "Le taux de rétention de l'audience et le pourcentage moyen de visionnage",
+              "L'heure précise de publication de la vidéo"
+            ],
+            correctIndex: 2
+          }
+        },
+        {
+          title: "Analyses de Données Marketing & Optimisation des Conversions",
+          content: "Sans modélisation de données, les campagnes créatives sont un pari risqué. Le growth hacking repose sur des pipelines de suivi précis, l'optimisation des taux de conversion (CRO) et des cadres d'A/B testing pour valider vos hypothèses de croissance.\n\nEn mesurant le Coût d'Acquisition Client (CAC) par rapport à la Valeur de Vie Client (LTV), vous pouvez optimiser vos budgets publicitaires et maximiser votre retour sur investissement (ROI) :\n1. Suivi basé sur les événements et structures de liens UTM\n2. Conception et exécution d'expériences d'A/B testing rigoureuses\n3. Passage à l'échelle des entonnoirs d'acquisition performants",
+          quiz: {
+            question: "Si une campagne marketing a un Coût d'Acquisition Client (CAC) supérieur à la Valeur de Vie Client (LTV), quelle est l'implication à long terme ?",
+            options: [
+              "L'entreprise deviendra très rentable avec le temps",
+              "L'entreprise perd de l'argent sur chaque client acquis et le modèle n'est pas viable",
+              "Le taux de conversion du site va automatiquement s'ajuster pour équilibrer les coûts",
+              "La plateforme publicitaire remboursera la différence à l'entreprise"
+            ],
+            correctIndex: 1
+          }
+        }
+      ]
+    };
+
+    await setDoc(doc(db, "ai_courses", "digital_marketing_native_fr"), {
+      ...digitalMarketingNativeCourseFR,
+      createdAt: new Date().toISOString()
+    });
+
     console.log("Seeding completed successfully!");
   } catch (error) {
     console.error("Failed to seed database:", error);
@@ -687,4 +805,54 @@ export async function getUserClicks(): Promise<any[]> {
     handleFirestoreError(err, OperationType.LIST, colName);
   }
 }
+
+// -------------------------------------------------------------------------
+// PROPATHSKILL AI COURSE FUNCTIONS
+// -------------------------------------------------------------------------
+
+export async function getAICourse(courseId: string): Promise<any | null> {
+  if (!db) return null;
+  const docRef = doc(db, "ai_courses", courseId);
+  try {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() };
+    }
+    return null;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.GET, `ai_courses/${courseId}`);
+  }
+}
+
+export async function saveAICourse(course: any): Promise<void> {
+  if (!db) return;
+  const docId = course.id || `course_${Date.now()}`;
+  const docPath = `ai_courses/${docId}`;
+  try {
+    await setDoc(doc(db, "ai_courses", docId), {
+      title: course.title || "",
+      description: course.description || "",
+      industry: course.industry || "",
+      partnerId: course.partnerId || "",
+      programId: course.programId || "",
+      chapters: course.chapters || [],
+      aiTutorPersona: course.aiTutorPersona || "ProPath AI Guide",
+      createdAt: course.createdAt || new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, docPath);
+  }
+}
+
+export async function getAICourses(): Promise<any[]> {
+  if (!db) return [];
+  const colName = "ai_courses";
+  try {
+    const querySnapshot = await getDocs(collection(db, colName));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.LIST, colName);
+  }
+}
+
 

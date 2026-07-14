@@ -77,6 +77,20 @@ export const SECTORS: Sector[] = [
     description: "Electric drivetrain configuration, smart vehicle mechanical diagnostics, and custom engine engineering.",
     category: "Trades",
     icon: "Wrench"
+  },
+  {
+    id: "digitalmarketing",
+    name: "Digital Marketing & Growth Hacking",
+    description: "Organic and paid search marketing (SEO/SEM), viral marketing, web analytics, and marketing funnel optimization.",
+    category: "Marketing",
+    icon: "Megaphone"
+  },
+  {
+    id: "contentcreation",
+    name: "Social Media & Content Production",
+    description: "Cross-platform storytelling, podcast/video editing, viral copy, influencer strategies, and graphic designs.",
+    category: "Creative Arts",
+    icon: "Video"
   }
 ];
 
@@ -1106,7 +1120,7 @@ export const DEEP_DIVE_TEMPLATES: Record<string, Array<{
 };
 
 export function getQuestionsForSector(sectorId: string): ScenarioQuestion[] {
-  const templates = DEEP_DIVE_TEMPLATES[sectorId];
+  const templates = DEEP_DIVE_TEMPLATES[sectorId] || DEEP_DIVE_TEMPLATES["ai"];
   if (!templates) return [];
   
   return templates.map((tmpl, idx) => ({

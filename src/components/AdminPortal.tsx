@@ -3,7 +3,7 @@ import {
   getPartners, savePartner, deletePartner,
   getPrograms, saveProgram, deleteProgram,
   getTeamApplications, updateTeamApplicationStatus, deleteTeamApplication,
-  getUserClicks
+  getUserClicks, saveAICourse
 } from "../lib/firebase";
 import { 
   Building, BookOpen, Users, Plus, Trash2, Edit2, Check, X, 
@@ -16,7 +16,9 @@ const PREDEFINED_INDUSTRIES = [
   "Cloud & AI Engineering",
   "Quantitative Finance",
   "Fintech & Digital Assets",
-  "Machine Learning"
+  "Machine Learning",
+  "Digital Marketing & Growth Hacking",
+  "Social Media & Content Production"
 ];
 
 const ensureAbsoluteUrl = (url: string) => {
@@ -64,6 +66,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
   // Form States (Programs)
   const [showProgramForm, setShowProgramForm] = useState(false);
   const [editingProgram, setEditingProgram] = useState<any | null>(null);
+  const [isGeneratingAICourse, setIsGeneratingAICourse] = useState(false);
   const [programPartnerId, setProgramPartnerId] = useState("");
   const [programTitle, setProgramTitle] = useState("");
   const [programDesc, setProgramDesc] = useState("");
@@ -210,9 +213,61 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
     if (!programTitle.trim() || !programPartnerId) return;
 
     const selectedPart = partners.find(p => p.id === programPartnerId);
+    const isProPathSkill = selectedPart && (
+      selectedPart.name.toLowerCase().includes("propathskill") || 
+      selectedPart.name.toLowerCase().includes("propath skill")
+    );
+
     try {
+      const generatedProgramId = editingProgram?.id || `program_${Date.now()}`;
+      let finalLink = programLink || "";
+
+      if (isProPathSkill) {
+        setIsGeneratingAICourse(true);
+        try {
+          // Check if title or description contains French words to request French course translation
+          const hasFrenchWords = /cours|formation|développement|numérique|gestion|stratégie/i.test(programTitle + " " + programDesc);
+          const lang = hasFrenchWords ? "french" : "english";
+
+          const response = await fetch("/api/generate-course-content", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              title: programTitle,
+              industry: programTrackId || "General Tech & Growth",
+              language: lang
+            })
+          });
+
+          if (response.ok) {
+            const courseData = await response.json();
+            const courseId = `course_${generatedProgramId}`;
+            await saveAICourse({
+              id: courseId,
+              programId: generatedProgramId,
+              partnerId: programPartnerId,
+              title: courseData.title || programTitle,
+              description: courseData.description || programDesc,
+              industry: programTrackId || "General Tech & Growth",
+              chapters: courseData.chapters || [],
+              aiTutorPersona: courseData.aiTutorPersona || "ProPath AI Guide",
+              createdAt: new Date().toISOString()
+            });
+            finalLink = `propathskill://course/${courseId}`;
+          } else {
+            console.error("Failed to generate AI course, response not OK.");
+          }
+        } catch (apiErr) {
+          console.error("Error calling AI course generator API:", apiErr);
+        } finally {
+          setIsGeneratingAICourse(false);
+        }
+      }
+
       const payload = {
-        id: editingProgram?.id || null,
+        id: generatedProgramId,
         partnerId: programPartnerId,
         partnerName: selectedPart ? selectedPart.name : "Partner Company",
         title: programTitle,
@@ -220,11 +275,12 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
         duration: programDuration,
         cost: programCost,
         level: programLevel,
-        link: programLink,
+        link: finalLink,
         trackId: programTrackId,
         country: programCountry,
         createdAt: editingProgram?.createdAt || new Date().toISOString()
       };
+      
       await saveProgram(payload);
       setShowProgramForm(false);
       await loadAllData();
@@ -518,15 +574,21 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                         <MapPin className="w-3.5 h-3.5 text-slate-500" />
                         <span>{p.location} ({p.country || "United States"})</span>
                       </div>
-                      <a
-                        href={ensureAbsoluteUrl(p.website)}
-                        target="_blank"
-                        referrerPolicy="no-referrer"
-                        className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                      >
-                        <span>Website</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      {p.website && p.website.trim() !== "" && !p.name.toLowerCase().includes("propath") ? (
+                        <a
+                          href={ensureAbsoluteUrl(p.website)}
+                          target="_blank"
+                          referrerPolicy="no-referrer"
+                          className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                        >
+                          <span>Website</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded text-[10px] border border-emerald-500/20">
+                          ProPathSkill Native Hub
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
@@ -600,15 +662,24 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                         <Briefcase className="w-3 h-3 shrink-0" />
                         <span className="line-clamp-1">Track: {pr.trackId || "General"}</span>
                       </div>
-                      <a
-                        href={ensureAbsoluteUrl(pr.link)}
-                        target="_blank"
-                        referrerPolicy="no-referrer"
-                        className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 self-end sm:self-auto shrink-0 font-mono"
-                      >
-                        <span>Apply Hub</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      {pr.link && pr.link.startsWith("propathskill://") ? (
+                        <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded text-[10px] border border-emerald-500/20 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
+                          ProPathSkill Native Course
+                        </span>
+                      ) : pr.link && pr.link.trim() !== "" ? (
+                        <a
+                          href={ensureAbsoluteUrl(pr.link)}
+                          target="_blank"
+                          referrerPolicy="no-referrer"
+                          className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 self-end sm:self-auto shrink-0 font-mono"
+                        >
+                          <span>Apply Hub</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-500 italic">No external link required</span>
+                      )}
                     </div>
                   </div>
                 ))
@@ -1192,11 +1263,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
 
               <div>
                 <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
-                  Website URL
+                  Website URL {partnerName.toLowerCase().includes("propath") && (
+                    <span className="text-emerald-400 font-black text-[9px] ml-1 px-1 py-0.5 bg-emerald-500/10 rounded uppercase">Optional for ProPathSkill</span>
+                  )}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. partner.com or https://partner.com"
+                  placeholder={partnerName.toLowerCase().includes("propath") ? "Hosted inside ProPath (Optional - Leave blank)" : "e.g. partner.com or https://partner.com"}
                   value={partnerWeb}
                   onChange={(e) => setPartnerWeb(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
@@ -1362,18 +1435,26 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 </div>
               </div>
 
-              <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
-                  Application Link / Hub URL
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. partner.com/apply or https://partner.com/apply"
-                  value={programLink}
-                  onChange={(e) => setProgramLink(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+              {(() => {
+                const selectedPart = partners.find(p => p.id === programPartnerId);
+                const isProPath = !!(selectedPart && selectedPart.name.toLowerCase().includes("propath"));
+                return (
+                  <div>
+                    <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                      Application Link / Hub URL {isProPath && (
+                        <span className="text-emerald-400 font-black text-[9px] ml-1 px-1 py-0.5 bg-emerald-500/10 rounded uppercase">Optional (AI Course Native)</span>
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={isProPath ? "Auto-generated ProPathSkill route (Optional - Leave blank)" : "e.g. partner.com/apply or https://partner.com/apply"}
+                      value={programLink}
+                      onChange={(e) => setProgramLink(e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                );
+              })()}
 
               <div>
                 <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
@@ -1389,19 +1470,46 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 />
               </div>
 
+              {(() => {
+                const activeSelPart = partners.find(p => p.id === programPartnerId);
+                const isSelProPathSkill = activeSelPart && (
+                  activeSelPart.name.toLowerCase().includes("propathskill") || 
+                  activeSelPart.name.toLowerCase().includes("propath skill")
+                );
+                if (!isSelProPathSkill) return null;
+                return (
+                  <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-slate-300 text-[11px] leading-relaxed flex items-start gap-2.5">
+                    <span className="text-sm">🤖</span>
+                    <div>
+                      <span className="text-indigo-400 font-bold block mb-0.5">ProPathSkill AI-Taught Partner</span>
+                      Saving this program will invoke Gemini AI to generate a personalized 3-chapter curriculum, generating local interactive lessons and quizzes for students.
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="pt-4 flex gap-3">
                 <button
                   type="button"
+                  disabled={isGeneratingAICourse}
                   onClick={() => setShowProgramForm(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer transition"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer transition shadow-lg shadow-indigo-600/25"
+                  disabled={isGeneratingAICourse}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer transition shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                 >
-                  Publish Program
+                  {isGeneratingAICourse ? (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating Course...</span>
+                    </>
+                  ) : (
+                    <span>Publish Program</span>
+                  )}
                 </button>
               </div>
             </form>

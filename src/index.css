@@ -30,11 +30,11 @@
   }
 
   .accent-gradient {
-    background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #1E3A8A 100%);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, #818CF8 0%, #C084FC 100%);
+    background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #1E40AF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }

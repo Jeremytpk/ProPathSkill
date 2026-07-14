@@ -77,6 +77,20 @@ export const SECTORS_FR: Sector[] = [
     description: "Configuration de transmissions électriques, diagnostic mécanique de véhicules intelligents et ingénierie de moteurs personnalisés.",
     category: "Métiers Techniques",
     icon: "Wrench"
+  },
+  {
+    id: "digitalmarketing",
+    name: "Marketing Digital & Growth Hacking",
+    description: "Marketing sur les moteurs de recherche (SEO/SEM), marketing viral, analyse web et optimisation de tunnels de conversion.",
+    category: "Marketing",
+    icon: "Megaphone"
+  },
+  {
+    id: "contentcreation",
+    name: "Réseaux Sociaux & Production de Contenu",
+    description: "Narration multiplateforme, montage vidéo/podcast, rédaction persuasive virale, stratégies d'influence et design graphique.",
+    category: "Arts Créatifs",
+    icon: "Video"
   }
 ];
 
