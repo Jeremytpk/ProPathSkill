@@ -535,11 +535,239 @@ function getFallbackRoadmap(selectedSectors: string[], answers: Record<string, s
     });
   }
 
-  return ensureProPathSkillForMarketingAndSocialMedia(tracks.slice(0, 3), language);
+  return ensureProPathSkillForSelectedIndustry(tracks.slice(0, 3), language, sectors[0]);
 }
 
-// Helper to ensure ProPathSkill is always in the educational resources list for digital marketing and social media
-function ensureProPathSkillForMarketingAndSocialMedia(recommendedTracks: any[], language: string) {
+// Helper to get industry-specific course resource for Learning School website
+function getIndustryCourseResource(sectorOrTitle: string, isFrench: boolean) {
+  const s = (sectorOrTitle || "").toLowerCase();
+
+  if (s.includes("ai") || s.includes("intelligence") || s.includes("ia") || s.includes("machine learning") || s.includes("llm")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Systèmes IA & Architectures LLM (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/ai_systems_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - AI Systems & LLM Architectures (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/ai_systems_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("fintech") || s.includes("finance") || s.includes("trading") || s.includes("banking") || s.includes("defi") || s.includes("blockchain")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - FinTech & Analyse Quantitative (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/fintech_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - FinTech & Quantitative Risk (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/fintech_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("energy") || s.includes("énergie") || s.includes("solar") || s.includes("wind") || s.includes("grid") || s.includes("renouvelable")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Énergie Propre & Réseaux Intelligents (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/smartgrid_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Smart Grid & Clean Energy (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/smartgrid_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("biotech") || s.includes("dna") || s.includes("genomic") || s.includes("health") || s.includes("sante") || s.includes("pharma")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Bioinformatique & Génomique (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/biotech_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Bioinformatics & Computational Genomics (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/biotech_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("space") || s.includes("aero") || s.includes("orbital") || s.includes("rocket") || s.includes("satellite")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Génie Aérospatial & Systèmes Orbitaux (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/spacetech_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Aerospace & Orbital Systems (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/spacetech_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("smartcities") || s.includes("city") || s.includes("ville") || s.includes("iot") || s.includes("urban")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Villes Intelligentes & Réseaux IoT (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/smartcities_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Smart Cities & Urban IoT Infrastructure (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/smartcities_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("creativedesign") || s.includes("ux") || s.includes("ui") || s.includes("spatial") || s.includes("ar") || s.includes("vr")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Design Numérique & Interfaces Spatiales (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/creativedesign_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Spatial UI & Creative Digital Design (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/creativedesign_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("art") || s.includes("fine") || s.includes("beaux-arts") || s.includes("peinture") || s.includes("gallery")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Beaux-Arts & Direction Artistique (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/art_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Fine Arts & Creative Media Direction (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/art_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("electrical") || s.includes("électr") || s.includes("automatis") || s.includes("wiring") || s.includes("cablage")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Automatisme & Électrotechnique Industrielle (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/electrical_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Industrial Automation & Electrical Systems (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/electrical_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("carpentry") || s.includes("charpent") || s.includes("menuis") || s.includes("bois") || s.includes("timber") || s.includes("wood")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Charpenterie Artisanale & Éco-Construction (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/carpentry_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Artisanal Carpentry & Sustainable Construction (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/carpentry_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("automotive") || s.includes("auto") || s.includes("moteur") || s.includes("engine") || s.includes("vehicle") || s.includes("véhicule")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Motorisation Électrique & Diagnostic Auto (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/automotive_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Electric Vehicle Drivetrains & Diagnostics (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/automotive_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("marketing") || s.includes("digitalmarketing") || s.includes("growth") || s.includes("seo")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Marketing Digital & Médias Sociaux (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/digital_marketing_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Digital Marketing & Social Media (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/digital_marketing_native",
+      type: "Interactive Course"
+    };
+  }
+
+  if (s.includes("content") || s.includes("contenu") || s.includes("social") || s.includes("creator") || s.includes("video")) {
+    return isFrench ? {
+      name: "ProPath École d'Apprentissage - Stratégie de Contenu Réseaux Sociaux (Cours Certifiant)",
+      platform: "ProPath Learning School",
+      duration: "À votre rythme (4 Semaines)",
+      link: "propathskill://course/content_creation_native",
+      type: "Cours interactif"
+    } : {
+      name: "ProPath Learning School - Social Content Strategy & Media Production (Certifying Course)",
+      platform: "ProPath Learning School",
+      duration: "Self-Paced (4 Weeks)",
+      link: "propathskill://course/content_creation_native",
+      type: "Interactive Course"
+    };
+  }
+
+  // Fallback
+  return isFrench ? {
+    name: `ProPath École d'Apprentissage - Spécialisation Professionnelle (${sectorOrTitle})`,
+    platform: "ProPath Learning School",
+    duration: "À votre rythme (4 Semaines)",
+    link: `propathskill://course/${s.replace(/[^a-z0-9]/g, "_")}_native`,
+    type: "Cours interactif"
+  } : {
+    name: `ProPath Learning School - Professional Specialization (${sectorOrTitle})`,
+    platform: "ProPath Learning School",
+    duration: "Self-Paced (4 Weeks)",
+    link: `propathskill://course/${s.replace(/[^a-z0-9]/g, "_")}_native`,
+    type: "Interactive Course"
+  };
+}
+
+// Helper to ensure ProPath Learning School course is always attached for the confirmed selected industry
+function ensureProPathSkillForSelectedIndustry(recommendedTracks: any[], language: string, primarySectorId?: string) {
   if (!recommendedTracks || !Array.isArray(recommendedTracks)) return recommendedTracks;
 
   const isFrench = language.toLowerCase() === "french";
@@ -547,66 +775,21 @@ function ensureProPathSkillForMarketingAndSocialMedia(recommendedTracks: any[], 
   return recommendedTracks.map((track) => {
     if (!track) return track;
 
-    const sectorId = (track.sector || "").toLowerCase();
-    const category = (track.category || "").toLowerCase();
-    const title = (track.title || "").toLowerCase();
-    const desc = (track.description || "").toLowerCase();
-
-    const isMarketingOrSocialMedia =
-      sectorId === "digitalmarketing" ||
-      sectorId === "contentcreation" ||
-      category.includes("marketing") ||
-      category.includes("social") ||
-      category.includes("médias") ||
-      category.includes("media") ||
-      category.includes("content") ||
-      category.includes("contenu") ||
-      title.includes("marketing") ||
-      title.includes("social") ||
-      title.includes("media") ||
-      title.includes("médias") ||
-      title.includes("content") ||
-      title.includes("contenu") ||
-      title.includes("growth") ||
-      desc.includes("marketing") ||
-      desc.includes("social") ||
-      desc.includes("médias") ||
-      desc.includes("media") ||
-      desc.includes("content") ||
-      desc.includes("contenu") ||
-      desc.includes("growth");
-
-    if (isMarketingOrSocialMedia) {
-      if (!track.educationalResources) {
-        track.educationalResources = [];
-      }
-
-      // Check if it already has a ProPathSkill resource
-      const hasProPathSkill = track.educationalResources.some(
-        (res: any) =>
-          (res.platform && res.platform.toLowerCase().includes("propath")) ||
-          (res.link && res.link.startsWith("propathskill://"))
-      );
-
-      if (!hasProPathSkill) {
-        const nativeResource = isFrench
-          ? {
-              name: "ProPathSkill - Marketing Digital & Médias Sociaux (Cours Certifiant)",
-              platform: "ProPathSkill",
-              duration: "À votre rythme (4 Semaines)",
-              link: "propathskill://course/digital_marketing_native",
-              type: "Cours interactif"
-            }
-          : {
-              name: "ProPathSkill - Digital Marketing & Social Media (Certifying Course)",
-              platform: "ProPathSkill",
-              duration: "Self-Paced (4 Weeks)",
-              link: "propathskill://course/digital_marketing_native",
-              type: "Interactive Course"
-            };
-        track.educationalResources.unshift(nativeResource);
-      }
+    if (!track.educationalResources) {
+      track.educationalResources = [];
     }
+
+    const targetSector = primarySectorId || track.sector || track.category || track.title || "ai";
+    const nativeResource = getIndustryCourseResource(targetSector, isFrench);
+
+    // Filter out previous propathskill links
+    const filteredResources = track.educationalResources.filter(
+      (res: any) => !(res.link && res.link.startsWith("propathskill://"))
+    );
+
+    // Unshift the confirmed industry resource at position 0
+    track.educationalResources = [nativeResource, ...filteredResources];
+
     return track;
   });
 }
@@ -619,94 +802,180 @@ function getFallbackCourseContent(title: string, industry: string, isFrench: boo
       ? `Un cours interactif complet conçu pour maîtriser les bases de : ${title || industry}.`
       : `An intensive interactive course designed to master core concepts of: ${title || industry}.`,
     aiTutorPersona: isFrench 
-      ? "Socrates, votre guide d'intelligence artificielle dédié de ProPath."
-      : "Socrates, your dedicated ProPath AI learning mentor.",
+      ? "Sophie Laurent (Directrice de Faculté & Mentor ProPath)"
+      : "Sophie Laurent (Faculty Director & ProPath Mentor)",
     chapters: [
       {
         id: "chap_1",
-        title: isFrench ? "Chapitre 1 : Les Fondements Fondamentaux" : "Chapter 1: Foundational Core Principles",
-        content: isFrench
-          ? `Bienvenue dans le premier chapitre de ${title}. Ce module couvre les concepts d'introduction clés nécessaires pour exceller dans le domaine. Vous explorerez l'évolution de l'industrie, les outils de base indispensables et les cadres analytiques utilisés par les professionnels chevronnés. L'objectif principal est de développer un état d'esprit structuré et axé sur les résultats.`
-          : `Welcome to the first chapter of ${title}. This module covers critical entry-level concepts required to excel in the domain. You will explore industry evolution, indispensable toolkits, and analytical frameworks used by seasoned professionals. The core focus is establishing a structured, growth-oriented mindset.`,
+        title: isFrench ? "Chapitre 1 : Les Fondements Fondamentaux & Cadres Stratégiques" : "Chapter 1: Foundational Core Principles & Strategic Frameworks",
+        summary: isFrench 
+          ? "Comprendre l'écosystème du domaine, les outils clés et l'analyse des besoins du marché." 
+          : "Master domain architecture, critical toolkits, and high-intent market analysis.",
+        sections: [
+          {
+            title: isFrench ? "1. Cartographie de l'Écosystème & Analyse de l'Intention" : "1. Ecosystem Architecture & Intent Analysis",
+            content: isFrench
+              ? `Le succès professionnel dans ${title || industry} exige une compréhension approfondie de l'écosystème global. Plutôt que de traiter les tâches de manière isolée, les spécialistes adoptent une approche systémique qui aligne chaque action avec l'intention réelle des utilisateurs et les objectifs stratégiques globaux.\n\nEn analysant les points d'accroche et les goulots d'étranglement, vous développez une vision globale permettant d'anticiper les risques opérationnels et de maximiser la valeur livrée.`
+              : `Professional excellence in ${title || industry} demands an ecosystem-first mindset. Rather than executing isolated tasks, top industry experts design end-to-end architectures that align technical outputs with buyer intent and strategic ROI goals.\n\nBy auditing workflow friction points early, practitioners mitigate operational risk, improve team execution velocity, and deliver measurable bottom-line value.`,
+            keyPoints: isFrench
+              ? [
+                  "Adopter une vision systémique basée sur l'intention utilisateur.",
+                  "Identifier et corriger les goulots d'étranglement dès les premières étapes.",
+                  "Mesurer le rendement (ROI) à chaque niveau d'exécution."
+                ]
+              : [
+                  "Adopt a systems-first architecture aligned with customer intent.",
+                  "Audit friction points early to prevent operational debt.",
+                  "Measure return-on-investment across every project milestone."
+                ],
+            example: {
+              scenario: isFrench 
+                ? "Une entreprise cherchait à améliorer l'efficacité de sa stratégie sans augmenter son budget." 
+                : "An enterprise needed to scale operational efficiency without inflating overhead costs.",
+              execution: isFrench
+                ? "Restructuration complète du pipeline en 3 étapes avec intégration d'outils d'automatisation et audits hebdomadaires."
+                : "Implemented a 3-tier workflow restructuring, integrating automated quality audits and clear accountability protocols.",
+              result: isFrench
+                ? "+240% de productivité et réduction de 45% des erreurs en 60 jours."
+                : "+240% team throughput and a 45% reduction in error rates within 60 days."
+            },
+            diagramType: "process_flow"
+          }
+        ],
         quiz: {
           question: isFrench 
-            ? "Quel est l'objectif principal de ce premier chapitre ?" 
-            : "What is the primary objective of this foundational chapter?",
+            ? "Quel est l'objectif principal de la cartographie d'écosystème dans ce module ?" 
+            : "What is the primary objective of ecosystem architecture mapping in this module?",
           options: isFrench
             ? [
-                "Développer un état d'esprit structuré et axé sur les résultats",
-                "Mémoriser des formules mathématiques complexes",
-                "Remplacer les mentors humains par des scripts d'automatisation",
-                "Ignorer les cadres de travail existants"
+                "Aligner la stratégie sur l'intention globale et réduire les frictions",
+                "Mémoriser des formules complexes sans cas pratique",
+                "Remplacer les équipes humaines par du hasard",
+                "Ignorer les retours des utilisateurs"
               ]
             : [
-                "Establish a structured, growth-oriented mindset",
-                "Memorize complex formulas without practical use cases",
-                "Replace human collaboration with automation scripts",
-                "Avoid reading the curated roadmap resources"
+                "Align strategy with user intent and audit operational friction points",
+                "Memorize abstract terminology without practical execution",
+                "Replace human oversight with unmonitored scripts",
+                "Ignore qualitative user feedback loops"
               ],
           correctIndex: 0,
           explanation: isFrench
-            ? "L'apprentissage initial doit se concentrer sur l'acquisition d'un état d'esprit solide et de bases méthodologiques robustes avant de plonger dans les détails techniques complexes."
-            : "Initial learning must focus on acquiring a resilient mental model and solid structural principles before embarking on high-complexity technical specializations."
+            ? "La cartographie systémique permet de lier la théorie à l'exécution réelle en éliminant les pertes d'efficacité."
+            : "Ecosystem mapping directly connects high-level strategy to real-world operational execution."
         }
       },
       {
         id: "chap_2",
-        title: isFrench ? "Chapitre 2 : Scénarios Pratiques de Terrain" : "Chapter 2: Applied Field Scenarios",
-        content: isFrench
-          ? `Dans ce deuxième chapitre, nous passons de la théorie à la pratique de terrain. Nous examinons des études de cas réelles d'échecs de projets et comment des correctifs stratégiques ont été déployés. La clé du succès professionnel est de savoir adapter sa vision théorique aux contraintes concrètes (budget, temps, ressources humaines) et aux imprévus opérationnels.`
-          : `In this second chapter, we bridge the gap between abstract theory and applied field practices. We analyze real-world case studies of project failures and see how strategic adjustments were made. The key to career growth is learning how to balance theoretical models with actual constraints (budget, timeline, human variables) and operational events.`,
+        title: isFrench ? "Chapitre 2 : Déploiement Pratique & Optimisation Opérationnelle" : "Chapter 2: Applied Field Execution & Optimization",
+        summary: isFrench
+          ? "Exécuter des protocoles de terrain, réaliser des tests comparatifs et optimiser les performances."
+          : "Execute field protocols, run iterative A/B testing, and maximize performance metrics.",
+        sections: [
+          {
+            title: isFrench ? "2. Protocoles d'Exécution & Tests Itératifs" : "2. Execution Protocols & Iterative A/B Testing",
+            content: isFrench
+              ? `La deuxième étape consiste à valider les hypothèses sur le terrain. L'exécution méthodique s'appuie sur des itérations rapides : au lieu de lancer des projets massifs sans retour, les professionnels déploient des pilotes ciblés et analysent la donnée en temps réel.\n\nCette rigueur analytique permet d'ajuster continuellement la trajectoire et d'obtenir un rendement supérieur.`
+              : `The second phase bridges conceptual design with field execution. Methodical execution relies on rapid iterative loops: rather than launching unvalidated mass campaigns, practitioners deploy targeted pilots and measure live performance metrics.\n\nThis continuous feedback loop empowers teams to pivot swiftly and maximize output quality.`,
+            keyPoints: isFrench
+              ? [
+                  "Déployer des projets pilotes pour valider rapidement les hypothèses.",
+                  "Analyser les données en temps réel pour ajuster les opérations.",
+                  "Systématiser les tests A/B pour chaque variante critique."
+                ]
+              : [
+                  "Deploy targeted pilots to validate core assumptions rapidly.",
+                  "Monitor real-time performance analytics to drive adjustments.",
+                  "Systematize A/B testing across all high-impact variables."
+                ],
+            example: {
+              scenario: isFrench 
+                ? "Faible taux de conversion lors des campagnes initiales."
+                : "Sub-optimal conversion rates during initial rollout.",
+              execution: isFrench
+                ? "Création de 5 déclinaisons de visuels et d'accroches avec tests A/B dynamiques sur 14 jours."
+                : "Executed systematic A/B split testing across 5 messaging angles over a 14-day cycle.",
+              result: isFrench
+                ? "Triplement du taux de clic (CTR de 1,2% à 3,8%) et baisse de 35% du coût d'acquisition."
+                : "Tripled Click-Through Rates (CTR 1.2% -> 3.8%) and lowered acquisition cost by 35%."
+            },
+            diagramType: "aida"
+          }
+        ],
         quiz: {
           question: isFrench
-            ? "Selon ce chapitre, quelle est la clé du succès professionnel ?"
-            : "According to this chapter, what is key to professional success?",
+            ? "Pourquoi l'exécution itérative est-elle privilégiée par rapport aux déploiements monolithiques ?"
+            : "Why are iterative execution loops preferred over monolithic deployments?",
           options: isFrench
             ? [
-                "Appliquer aveuglément des modèles théoriques",
-                "Savoir adapter sa vision théorique aux contraintes concrètes",
-                "Attendre que d'autres résolvent les problèmes",
-                "Minimiser l'importance de l'analyse opérationnelle"
+                "Elle permet d'ajuster rapidement la stratégie grâce aux données en temps réel",
+                "Elle augmente indéfiniment les coûts de production",
+                "Elle empêche de mesurer les résultats",
+                "Elle supprime la nécessité de tester"
               ]
             : [
-                "Blindly executing theoretical models without flexibility",
-                "Learning to balance theoretical insights with concrete, real-world constraints",
-                "Waiting for stakeholders to resolve blockages",
-                "Minimizing the importance of hands-on operational analytics"
+                "It enables rapid strategic adjustments based on live performance data",
+                "It unnecessarily inflates capital expenditure",
+                "It prevents real-time outcome tracking",
+                "It eliminates the need for data analysis"
               ],
-          correctIndex: 1,
+          correctIndex: 0,
           explanation: isFrench
-            ? "L'excellence professionnelle réside dans la capacité à surmonter les imprévus réels en adaptant intelligemment la théorie."
-            : "True professional expertise lies in adapting conceptual models to actual constraints and solving real challenges on the ground."
+            ? "Les itérations réduisent les risques financiers et garantissent une amélioration continue."
+            : "Iterative testing minimizes financial risk while driving continuous performance gains."
         }
       },
       {
         id: "chap_3",
-        title: isFrench ? "Chapitre 3 : Maîtrise Avancée & Prochaines Étapes" : "Chapter 3: Advanced Mastery & Next Steps",
-        content: isFrench
-          ? `Dans ce dernier module de formation, nous explorons comment intégrer de manière durable vos compétences dans votre parcours de carrière. Nous analyserons les techniques d'optimisation de performance, la gestion de projet avancée et comment obtenir des certifications professionnelles de haut niveau. Vous êtes maintenant prêt à exceller !`
-          : `In this final training module, we explore how to sustainably integrate your skills into your long-term career path. We will analyze high-performance optimization techniques, advanced project management, and how to acquire elite industry certifications. You are now prepared to excel!`,
+        title: isFrench ? "Chapitre 3 : Maîtrise Avancée, Économie Unitaire & Échelle" : "Chapter 3: Advanced Scale, Unit Economics & Mastery",
+        summary: isFrench
+          ? "Calculer la rentabilité financière, pérenniser la croissance et obtenir les certifications cibles."
+          : "Master unit economics, scale operations sustainably, and secure elite industry credentials.",
+        sections: [
+          {
+            title: isFrench ? "3. Économie Unitaire & Pérennité de la Croissance" : "3. Unit Economics & Scalable Mastery",
+            content: isFrench
+              ? `Pour atteindre le sommet de la maîtrise professionnelle dans ${title || industry}, la rentabilité unitaire et l'évolutivité sont incontournables. Vous devez mesurer précisément le ratio coût/bénéfice et automatiser les processus récurrents pour libérer de la bande passante stratégique.\n\nEn consolidant vos résultats et en préparant les certifications reconnues, vous vous positionnez comme un leader incontournable de l'industrie.`
+              : `Reaching true mastery in ${title || industry} requires mastering unit economics and scalable governance. Professionals must rigorously calculate cost-to-value ratios and automate recurring workflows to free up high-level strategic bandwidth.\n\nBy codifying best practices and earning industry-accredited certifications, you establish long-term authority in your field.`,
+            keyPoints: isFrench
+              ? [
+                  "Maintenir un ratio de rentabilité unitaire élevé (LTV:CAC >= 3:1).",
+                  "Automatiser les workflows répétitifs pour libérer la vision stratégique.",
+                  "Obtenir les certifications professionnelles clés pour valider l'expertise."
+                ]
+              : [
+                  "Maintain strong unit economics benchmarks (LTV:CAC >= 3:1).",
+                  "Automate repetitive workflows to scale operational bandwidth.",
+                  "Secure target industry credentials to validate professional authority."
+                ],
+            example: {
+              scenario: isFrench 
+                ? "Coûts de gestion trop élevés lors de l'augmentation du volume."
+                : "Scaling bottlenecks leading to margin compression.",
+              execution: isFrench
+                ? "Mise en place d'un tableau de bord financier en temps réel et automatisation du contrôle qualité."
+                : "Deployed real-time financial telemetry dashboards and automated quality assurance standards.",
+              result: isFrench
+                ? "Progression de la marge nette de +28% et passage à l'échelle nationale réussi."
+                : "+28% net margin expansion and successful nation-wide scaling."
+            },
+            diagramType: "roas"
+          }
+        ],
         quiz: {
           question: isFrench
-            ? "Quel est l'objectif du dernier chapitre de formation ?"
-            : "What is the focus of this final training chapter?",
-          options: isFrench
-            ? [
-                "Intégrer durablement vos compétences dans votre parcours professionnel",
-                "Reprendre la formation depuis le début",
-                "Abandonner l'acquisition de nouvelles certifications",
-                "Ignorer les opportunités locales de placement"
-              ]
-            : [
-                "Sustainably integrate your skills into your long-term career path",
-                "Restart the training program from chapter one",
-                "Avoid acquiring professional certifications",
-                "Disregard local placement opportunities"
-              ],
+            ? "Quel ratio financier indique une croissance saine et scalable ?"
+            : "Which benchmark ratio signifies sustainable, scalable growth?",
+          options: [
+            "LTV : CAC ≥ 3 : 1",
+            "LTV : CAC = 1 : 1",
+            "LTV : CAC = 0.5 : 1",
+            "LTV : CAC = 1 : 10"
+          ],
           correctIndex: 0,
           explanation: isFrench
-            ? "Le but ultime du cours est de vous aider à appliquer efficacement et durablement vos nouvelles compétences sur le marché du travail réel."
-            : "The ultimate goal of the course is to help you successfully and sustainably apply your newly acquired skills in the real job market."
+            ? "Un ratio LTV/CAC supérieur ou égal à 3:1 garantit une rentabilité solide tout en finançant la croissance."
+            : "An LTV:CAC ratio of 3:1 or higher ensures robust profitability while funding expansion."
         }
       }
     ]
@@ -728,38 +997,33 @@ app.post("/api/generate-course-content", async (req, res) => {
       return res.json(fallbackCourse);
     }
 
-    const systemInstruction = `You are a world-class AI learning architect and vocational professor.
+    const systemInstruction = `You are an expert vocational professor, industry lead, and curriculum designer.
 Generate a comprehensive, high-fidelity interactive learning course structured in JSON format.
-The course must be tailored to the title and industry provided.
+The course must be tailored specifically to the requested course title ("${title}") and industry ("${industry}").
 The course must have exactly 3 high-quality, rich chapters.
-Each chapter must include highly detailed educational lesson text (the "content" field, which must be multiple paragraphs of rich pedagogical information, with no placeholder text) and 1 multiple-choice "quiz" question testing the chapter's material.
-Write the entire output in ${isFrench ? "French" : "English"} (including titles, description, content, quiz, answers, and tutor persona).
-Make the AI Tutor Persona very engaging, supportive, and knowledgeable.`;
 
-    const promptText = `Generate a course for the title: "${title}" in the industry: "${industry}".
-The JSON must follow the schema:
-{
-  "title": "...",
-  "description": "...",
-  "aiTutorPersona": "...",
-  "chapters": [
-    {
-      "id": "...",
-      "title": "...",
-      "content": "...",
-      "quiz": {
-        "question": "...",
-        "options": ["...", "...", "...", "..."],
-        "correctIndex": 0,
-        "explanation": "..."
-      }
-    }
-  ]
-}`;
+CRITICAL STRUCTURAL & CONTENT RULES:
+- Each chapter MUST contain a "sections" array with 2 highly detailed sections.
+- Each section MUST contain:
+  1. "title": Crisp section title describing the topic.
+  2. "content": Multiple rich, highly detailed educational paragraphs (at least 150-250 words) with real-world strategies, tools, and step-by-step methodologies. NO placeholders.
+  3. "keyPoints": Array of 3 key takeaway bullet strings.
+  4. "example": Object with "scenario" (string), "execution" (string), and "result" (string) providing a concrete real-world business/technical case study with metrics!
+  5. "diagramType": String choosing the most relevant visual diagram: "funnel", "seo", "aida", "roas", or "process_flow".
+- Include 1 multiple-choice "quiz" testing the chapter's specific subject material.
+
+CRITICAL PERSONA RULE:
+- You are the PROFESSOR teaching the subject matter of "${title}".
+- Focus course content entirely on the principles, practical execution, and tools of "${title}".
+- Do NOT write course content about AI itself unless the course title is specifically about AI or Machine Learning.
+- Write everything in ${isFrench ? "French" : "English"}.`;
+
+    const promptText = `Generate an in-depth course for title: "${title}" in industry: "${industry}".
+Return JSON adhering strictly to the schema.`;
 
     const response = await withTimeout(
       aiClient.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: promptText,
         config: {
           systemInstruction,
@@ -777,7 +1041,32 @@ The JSON must follow the schema:
                   properties: {
                     id: { type: Type.STRING },
                     title: { type: Type.STRING },
-                    content: { type: Type.STRING },
+                    summary: { type: Type.STRING },
+                    sections: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          title: { type: Type.STRING },
+                          content: { type: Type.STRING },
+                          keyPoints: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                          },
+                          example: {
+                            type: Type.OBJECT,
+                            properties: {
+                              scenario: { type: Type.STRING },
+                              execution: { type: Type.STRING },
+                              result: { type: Type.STRING }
+                            },
+                            required: ["scenario", "execution", "result"]
+                          },
+                          diagramType: { type: Type.STRING }
+                        },
+                        required: ["title", "content", "keyPoints", "example", "diagramType"]
+                      }
+                    },
                     quiz: {
                       type: Type.OBJECT,
                       properties: {
@@ -792,7 +1081,7 @@ The JSON must follow the schema:
                       required: ["question", "options", "correctIndex", "explanation"]
                     }
                   },
-                  required: ["id", "title", "content", "quiz"]
+                  required: ["id", "title", "summary", "sections", "quiz"]
                 }
               }
             },
@@ -800,7 +1089,7 @@ The JSON must follow the schema:
           }
         }
       }),
-      15000,
+      35000,
       "Course generation timed out"
     );
 
@@ -854,11 +1143,11 @@ app.post("/api/ask-tutor", async (req, res) => {
       return res.json({ response: reply });
     }
 
-    const systemInstruction = `You are an interactive AI tutor named "${tutorPersona || "Socrates"}".
-You are teaching a professional vocational course.
-Answer the student's question accurately, concisely, and encouragingly, using the course details provided as context.
+    const systemInstruction = `You are an expert domain professor and tutor named "${tutorPersona || "Course Faculty Mentor"}".
+You are teaching a professional vocational course on "${courseContext?.title || "this subject"}".
+Your role is to act as the knowledgeable, supportive professor for this specific course topic, providing clear explanations, industry best practices, and answering student questions about the course material.
 Course context: ${JSON.stringify(courseContext || "")}
-Write the response in ${isFrench ? "French" : "English"}. Keep it friendly, educational, and structured with paragraphs.`;
+Write the response in ${isFrench ? "French" : "English"}. Keep it friendly, educational, authoritative, and structured with clear paragraphs.`;
 
     const contents = [
       ...(chatHistory || []).map((msg: any) => ({
@@ -870,7 +1159,7 @@ Write the response in ${isFrench ? "French" : "English"}. Keep it friendly, educ
 
     const response = await withTimeout(
       aiClient.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents,
         config: {
           systemInstruction
@@ -961,7 +1250,7 @@ Respond STRICTLY with a valid JSON object matching the requested schema. Ensure 
       try {
         response = await withTimeout(
           aiClient.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.5-flash",
             contents: promptText,
             config: {
               responseMimeType: "application/json",
@@ -1049,7 +1338,7 @@ Respond STRICTLY with a valid JSON object matching the requested schema. Ensure 
               }
             }
           }),
-          15000,
+          30000,
           "Roadmap generation timed out"
         );
 
@@ -1060,7 +1349,7 @@ Respond STRICTLY with a valid JSON object matching the requested schema. Ensure 
 
         const data = JSON.parse(jsonText);
         if (data && data.recommendedTracks) {
-          data.recommendedTracks = ensureProPathSkillForMarketingAndSocialMedia(data.recommendedTracks, chosenLanguage);
+          data.recommendedTracks = ensureProPathSkillForSelectedIndustry(data.recommendedTracks, chosenLanguage, selectedSectors?.[0]);
         }
         return res.json(data);
       } catch (err: any) {

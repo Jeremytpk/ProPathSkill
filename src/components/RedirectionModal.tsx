@@ -20,22 +20,21 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
     // Reset countdown when resource is selected
     setCountdown(5);
 
-    // Set interval for countdown
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Safe redirect
-          window.open(resource.link, "_blank", "noopener,noreferrer");
-          onClose();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [resource, onClose, isAICourse]);
+  }, [resource, isAICourse]);
+
+  useEffect(() => {
+    if (!resource || isAICourse) return;
+
+    if (countdown <= 0) {
+      window.open(resource.link, "_blank", "noopener,noreferrer");
+      onClose();
+    }
+  }, [countdown, resource, isAICourse, onClose]);
 
   if (!resource) return null;
 

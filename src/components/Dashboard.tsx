@@ -325,7 +325,7 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
         </div>
         
         {/* Animated Pill Selector */}
-        <div className="flex bg-slate-950/60 p-1.5 rounded-2xl border border-slate-800">
+        <div className="flex max-w-full overflow-x-auto scrollbar-none bg-slate-950/60 p-1.5 rounded-2xl border border-slate-800 gap-1.5 w-full md:w-auto">
           {recommendedTracks.map((track, idx) => (
             <button
               key={track.id}
@@ -831,7 +831,7 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
       {/* SECURE APPLICATION PLACEMENT MODAL */}
       {isApplyModalOpen && selectedPartner && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 md:p-8 relative overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
             
             <h3 className="text-lg font-bold font-display text-white">

@@ -4,14 +4,17 @@ import { Dashboard } from "./components/Dashboard";
 import { ReportHeader } from "./components/ReportHeader";
 import { ConfirmationModal } from "./components/ConfirmationModal";
 import { AdminPortal } from "./components/AdminPortal";
+import { DigitalMarketingCourseHub } from "./components/DigitalMarketingCourseHub";
 import { CareerReport, MentorGoal } from "./types";
 import { getReport } from "./lib/firebase";
 import { 
   Sparkles, Compass, AlertCircle, RefreshCw, 
-  ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight
+  ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight, Megaphone,
+  Menu, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ProPathLogo } from "./components/ProPathLogo";
+import { getFallbackRoadmap } from "./fallbackClient";
 
 const SUPPORTED_COUNTRIES = [
   { code: "US", name: "United States", flag: "🇺🇸", currency: "USD" },
@@ -29,7 +32,9 @@ export default function App() {
   const [submittingAssessment, setSubmittingAssessment] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [showDigitalMarketingHub, setShowDigitalMarketingHub] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Localization and Regional States
   const [selectedCountry, setSelectedCountry] = useState<string>(() => {
@@ -168,6 +173,59 @@ export default function App() {
       setSubmitError(selectedLanguage === "french"
         ? "Le moteur intelligent d'intelligence artificielle a rencontré une forte latence. ProPath a chargé l'algorithme d'orientation local pour garantir un résultat immédiat."
         : "The AI service is experiencing high demand. ProPath has dynamically loaded our high-fidelity offline backup engine to ensure seamless, zero-delay results.");
+
+      // Setup offline initial mentor goals
+      const initialGoals: MentorGoal[] = [
+        {
+          id: "goal_1",
+          text: selectedLanguage === "french"
+            ? "Passer en revue les compétences et les plans d'action avec un mentor de carrière."
+            : "Review matched competency levels and delta trajectories with a career mentor.",
+          completed: false,
+          category: "Mentorship",
+        },
+        {
+          id: "goal_2",
+          text: selectedLanguage === "french"
+            ? "S'inscrire au programme de formation gratuit prioritaire suggéré."
+            : "Register for the top-priority curated free educational program.",
+          completed: false,
+          category: "Technical",
+        },
+        {
+          id: "goal_3",
+          text: selectedLanguage === "french"
+            ? "Évaluer vos compétences techniques sur des projets de code open source ou GitHub."
+            : "Benchmark high-level skills on open GitHub repositories or code projects.",
+          completed: false,
+          category: "Leadership",
+        }
+      ];
+
+      try {
+        const fallbackTracks = getFallbackRoadmap(
+          data.selectedSectors,
+          data.answers,
+          selectedCountry || "United States",
+          selectedLanguage || "english"
+        );
+
+        const fallbackReport: CareerReport = {
+          id: `local_${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          answers: data,
+          recommendedTracks: fallbackTracks,
+          mentorGoals: initialGoals,
+          note: selectedLanguage === "french"
+            ? "Généré via le moteur de secours ProPath en raison de la latence de l'API."
+            : "Loaded via ProPath intelligent backup engine due to transient API latency."
+        };
+
+        setReport(fallbackReport);
+        localStorage.setItem("propath_active_report", JSON.stringify(fallbackReport));
+      } catch (fallbackErr) {
+        console.error("Failed to generate offline fallback:", fallbackErr);
+      }
     } finally {
       setSubmittingAssessment(false);
     }
@@ -248,7 +306,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono">
+          {/* Desktop Controls */}
+          <div className="hidden md:flex items-center gap-3 text-xs font-mono">
             {/* Country and Language Quick Switchers */}
             <div className="flex items-center gap-1.5 border-r border-slate-800/80 pr-3 mr-1">
               <select
@@ -275,6 +334,27 @@ export default function App() {
                 ))}
               </select>
             </div>
+
+            {/* Digital Marketing AI Courses Button */}
+            <button
+              onClick={() => {
+                setShowDigitalMarketingHub(!showDigitalMarketingHub);
+                setIsAdminView(false);
+              }}
+              className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm ${
+                showDigitalMarketingHub
+                  ? "border-purple-500 bg-purple-500/20 text-purple-300"
+                  : theme === "dark"
+                    ? "border-purple-500/40 bg-purple-950/40 text-purple-300 hover:bg-purple-900/60 hover:text-white hover:border-purple-400"
+                    : "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900 hover:border-purple-400"
+              }`}
+              title={selectedLanguage === "french" ? "Cours Marketing Digital (IA Gemini)" : "Digital Marketing AI Courses"}
+              id="digital-marketing-courses-button"
+            >
+              <Megaphone className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
+              <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            </button>
 
             {/* Admin Portal Toggle Link */}
             <button
@@ -318,7 +398,137 @@ export default function App() {
               </button>
             )}
           </div>
+
+          {/* Smartphone / Mobile Hamburger Menu Toggle Button */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`p-2 rounded-xl border transition cursor-pointer ${
+                theme === "dark"
+                  ? "border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white"
+                  : "border-slate-300 bg-white text-slate-700 hover:text-slate-900"
+              }`}
+              aria-label="Toggle Navigation Menu"
+              id="mobile-menu-toggle"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5 text-indigo-400" /> : <Menu className="w-5 h-5 text-indigo-400" />}
+            </button>
+          </div>
         </div>
+
+        {/* Smartphone / Mobile Collapsible Dropdown Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`md:hidden overflow-hidden border-t mt-3 pt-3 px-1 flex flex-col gap-3 font-mono text-xs ${
+                theme === "dark" ? "border-slate-800/80 text-slate-200" : "border-slate-200 text-slate-800"
+              }`}
+            >
+              {/* Language & Country Switchers */}
+              <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/40 dark:bg-slate-900/70 border border-slate-800/60">
+                <span className="text-[11px] font-sans font-semibold text-slate-400">
+                  {selectedLanguage === "french" ? "Langue & Région :" : "Language & Region:"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => updateLanguage(e.target.value as "english" | "french")}
+                    className="bg-slate-900/90 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="english">🇬🇧 EN</option>
+                    <option value="french">🇫🇷 FR</option>
+                  </select>
+
+                  <select
+                    value={selectedCountry}
+                    onChange={(e) => updateCountry(e.target.value)}
+                    className="bg-slate-900/90 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="" disabled>{selectedLanguage === "french" ? "Pays" : "Country"}</option>
+                    {SUPPORTED_COUNTRIES.map(c => (
+                      <option key={c.code} value={c.name}>
+                        {c.flag} {c.code}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Digital Marketing AI Courses Button */}
+              <button
+                onClick={() => {
+                  setShowDigitalMarketingHub(!showDigitalMarketingHub);
+                  setIsAdminView(false);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
+                  showDigitalMarketingHub
+                    ? "border-purple-500 bg-purple-500/20 text-purple-300"
+                    : theme === "dark"
+                      ? "border-purple-500/40 bg-purple-950/40 text-purple-300 hover:bg-purple-900/60"
+                      : "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-purple-400 fill-purple-400/20" />
+                  <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              </button>
+
+              {/* Admin Portal Link */}
+              <button
+                onClick={() => {
+                  setIsAdminView(!isAdminView);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
+                  isAdminView
+                    ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
+                    : theme === "dark"
+                      ? "border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-indigo-500" />
+                  <span>{isAdminView ? (selectedLanguage === "french" ? "Quitter Admin" : "Exit Admin") : (selectedLanguage === "french" ? "Portail Admin" : "Admin Console")}</span>
+                </div>
+              </button>
+
+              {/* Theme Switch & Reset */}
+              <div className="flex items-center justify-between gap-2 pt-1 pb-1">
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className={`flex-1 py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-center gap-2 text-xs cursor-pointer ${
+                    theme === "dark"
+                      ? "border-slate-800 bg-slate-900/80 text-amber-400 hover:bg-slate-800"
+                      : "border-slate-200 bg-white text-indigo-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  <span>{theme === "dark" ? (selectedLanguage === "french" ? "Mode Clair" : "Light Mode") : (selectedLanguage === "french" ? "Mode Sombre" : "Dark Mode")}</span>
+                </button>
+
+                {report && !window.location.search.includes("reportId") && !isAdminView && (
+                  <button
+                    onClick={() => {
+                      confirmReset();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-xs font-sans font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"
+                  >
+                    {selectedLanguage === "french" ? "Réinitialiser" : "Reset"}
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Main Content Area */}
@@ -363,6 +573,21 @@ export default function App() {
               Start New Evaluation
             </button>
           </div>
+        ) : showDigitalMarketingHub ? (
+          /* Route to Standalone Digital Marketing AI Academy Page */
+          <motion.div
+            key="digital-marketing-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DigitalMarketingCourseHub
+              onBack={() => setShowDigitalMarketingHub(false)}
+              language={selectedLanguage}
+              theme={theme}
+            />
+          </motion.div>
         ) : isAdminView ? (
           /* Route to Partner and Application Admin Console */
           <motion.div
@@ -559,11 +784,7 @@ export default function App() {
 
       {/* Simple Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-mono print:hidden mt-12">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            <span>ProPath Vocational Cloud System (v2.5)</span>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <div>
             <span>© {new Date().getFullYear()} ProPath. All Rights Reserved.</span>
           </div>

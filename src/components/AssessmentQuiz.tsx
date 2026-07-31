@@ -140,6 +140,17 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
     return firstFour;
   }, [selectedSectors, questionsList]);
 
+  // Active selected sector objects for reminder display
+  const selectedSectorObjs = useMemo(() => {
+    return selectedSectors
+      .map((id) => sectorsList.find((s) => s.id === id))
+      .filter((s): s is Sector => Boolean(s));
+  }, [selectedSectors, sectorsList]);
+
+  const currentDeepDiveSector = useMemo(() => {
+    return sectorsList.find((s) => s.id === selectedSuggestedSectorId);
+  }, [selectedSuggestedSectorId, sectorsList]);
+
   // Calculate dominant dimension from baseline answers
   const dominantDimension = useMemo(() => {
     const counts: Record<string, number> = {
@@ -246,52 +257,21 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
     }
   };
 
-  // Select option for question and auto-advance for a seamless UX
+  // Select option for question
   const handleSelectOption = (questionId: string, optionId: string) => {
-    setAnswers((prev) => {
-      const updated = { ...prev, [questionId]: optionId };
-      
-      // Auto-advance to the next question
-      setTimeout(() => {
-        if (currentQuestionIdx < activeQuestions.length - 1) {
-          setCurrentQuestionIdx((idx) => idx + 1);
-        } else {
-          setCurrentStep("suggestions");
-        }
-      }, 250);
-      
-      return updated;
-    });
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  // Select option for deep-dive question and auto-advance
+  // Select option for deep-dive question
   const handleSelectDeepDiveOption = (questionId: string, optionId: string) => {
-    setDeepDiveAnswers((prev) => {
-      const updated = { ...prev, [questionId]: optionId };
-      
-      // Auto-advance to the next deep-dive question
-      setTimeout(() => {
-        if (deepDiveQuestionIdx < deepDiveQuestions.length - 1) {
-          setDeepDiveQuestionIdx((idx) => idx + 1);
-        } else {
-          setCurrentStep("success");
-        }
-      }, 250);
-      
-      return updated;
-    });
+    setDeepDiveAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  // Select a sector on the suggestions screen and auto-advance to technical deep-dive
+  // Select a sector on the suggestions screen
   const handleSelectSuggestedSector = (sectorId: string) => {
     setSelectedSuggestedSectorId(sectorId);
     setDeepDiveQuestionIdx(0);
     setDeepDiveAnswers({});
-    
-    // Auto-advance immediately
-    setTimeout(() => {
-      setCurrentStep("deepdive");
-    }, 250);
   };
 
   // Next question / step
@@ -493,6 +473,40 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
             exit={{ opacity: 0, y: -15 }}
             className="glass-card p-6 md:p-10 shadow-2xl"
           >
+            {/* Selected Industry Anchor Reminder */}
+            {selectedSectorObjs.length > 0 && (
+              <div className="mb-6 p-3.5 bg-slate-950/80 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20 shrink-0 flex items-center justify-center">
+                    <Compass className="w-4 h-4 text-indigo-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-bold">
+                      {isFrench ? "Secteur(s) Sélectionné(s)" : "Selected Target Industry"}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {selectedSectorObjs.map((sec) => (
+                        <span
+                          key={sec.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold text-indigo-200"
+                        >
+                          <LucideIcon name={sec.icon} size={14} className="text-indigo-400" />
+                          {sec.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep("sectors")}
+                  className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 px-3 py-1.5 rounded-xl transition border border-indigo-500/20 active:scale-95 cursor-pointer ml-auto sm:ml-0"
+                >
+                  {isFrench ? "Changer de secteur" : "Change selection"}
+                </button>
+              </div>
+            )}
+
             {/* Header progress bar */}
             <div className="mb-8">
               <div className="flex justify-between items-center text-xs text-slate-400 font-mono mb-2">
@@ -795,6 +809,28 @@ export function AssessmentQuiz({ onSubmit, isLoading, selectedLanguage, selected
             exit={{ opacity: 0, y: -15 }}
             className="glass-card p-6 md:p-10 shadow-2xl"
           >
+            {/* Active Deep Dive Industry Banner */}
+            {currentDeepDiveSector && (
+              <div className="mb-6 p-3.5 bg-slate-950/80 rounded-2xl border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 shrink-0 flex items-center justify-center">
+                    <LucideIcon name={currentDeepDiveSector.icon} size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-bold">
+                      {isFrench ? "Secteur Spécifique de Validation" : "Deep-Dive Target Industry"}
+                    </span>
+                    <span className="text-sm font-bold text-emerald-300 mt-0.5 block font-display">
+                      {currentDeepDiveSector.name}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                  {currentDeepDiveSector.category}
+                </span>
+              </div>
+            )}
+
             {/* Header progress bar */}
             <div className="mb-8">
               <div className="flex justify-between items-center text-xs text-slate-400 font-mono mb-2">
