@@ -5,7 +5,7 @@ import {
   ChevronRight, GraduationCap, X, MessageSquare, Loader2, RefreshCw,
   Lock, ArrowRight, ArrowLeft, Target, Zap, BarChart3, Layers, Lightbulb,
   TrendingUp, FileText, Check, Globe, Search, PieChart, ArrowUpRight, Activity, Minus,
-  User, ShieldCheck, Printer, Share2, Edit3
+  User, ShieldCheck, Printer, Share2, Edit3, Sliders, RotateCcw, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -417,6 +417,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
   const [showCertificate, setShowCertificate] = useState(false);
   const [showStudentInfoModal, setShowStudentInfoModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isAdminEditingCert, setIsAdminEditingCert] = useState(false);
 
   const [studentInfo, setStudentInfo] = useState<{
     fullName: string;
@@ -441,6 +442,61 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
       studentId: `PPS-${Math.floor(100000 + Math.random() * 900000)}`
     };
   });
+
+  const [certCustomData, setCertCustomData] = useState({
+    fullName: "",
+    title: "",
+    organization: "",
+    studentId: "",
+    courseTitle: "",
+    issueDate: "",
+    boardPresident: "Dr. Marcus Vance",
+    boardPresidentTitle: "",
+    facultyMentor: "",
+    facultyMentorTitle: "",
+    citationText: ""
+  });
+
+  useEffect(() => {
+    setCertCustomData(prev => ({
+      fullName: prev.fullName || studentInfo.fullName || "Student Full Name",
+      title: prev.title || studentInfo.title || (isFrench ? "Spécialiste Certifié" : "Certified Specialist"),
+      organization: prev.organization || studentInfo.organization || (isFrench ? "ProPath Académie Mondiale d'Excellence" : "ProPath Global Academy of Vocational Excellence"),
+      studentId: prev.studentId || studentInfo.studentId || `PPS-${Math.floor(100000 + Math.random() * 900000)}`,
+      courseTitle: prev.courseTitle || course?.title || "",
+      issueDate: prev.issueDate || new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
+      boardPresident: prev.boardPresident || "Dr. Marcus Vance",
+      boardPresidentTitle: prev.boardPresidentTitle || (isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President"),
+      facultyMentor: prev.facultyMentor || course?.aiTutorPersona || "Sophie Laurent",
+      facultyMentorTitle: prev.facultyMentorTitle || (isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor"),
+      citationText: prev.citationText || (isFrench 
+        ? "En reconnaissance de la validation intégrale des modules de formation, des examens théoriques, des études de cas pratiques et de la maîtrise professionnelle démontrée dans le programme :" 
+        : "For exceptional performance and successful completion of all core syllabus requirements, practical case studies, and final examination modules in:")
+    }));
+  }, [course, studentInfo, isFrench]);
+
+  const handleResetCertDefaults = () => {
+    setCertCustomData({
+      fullName: studentInfo.fullName || "Student Full Name",
+      title: studentInfo.title || (isFrench ? "Spécialiste Certifié" : "Certified Specialist"),
+      organization: isFrench ? "ProPath Académie Mondiale d'Excellence" : "ProPath Global Academy of Vocational Excellence",
+      studentId: `PPS-${Math.floor(100000 + Math.random() * 900000)}`,
+      courseTitle: course?.title || "",
+      issueDate: new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
+      boardPresident: "Dr. Marcus Vance",
+      boardPresidentTitle: isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President",
+      facultyMentor: course?.aiTutorPersona || "Sophie Laurent",
+      facultyMentorTitle: isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor",
+      citationText: isFrench 
+        ? "En reconnaissance de la validation intégrale des modules de formation, des examens théoriques, des études de cas pratiques et de la maîtrise professionnelle démontrée dans le programme :" 
+        : "For exceptional performance and successful completion of all core syllabus requirements, practical case studies, and final examination modules in:"
+    });
+  };
+
+  const handleOpenAdminCertEditor = () => {
+    setIsAdminEditingCert(true);
+    setShowCertificate(true);
+  };
 
   const handleClaimCertificateClick = () => {
     if (!studentInfo.fullName || !studentInfo.fullName.trim()) {
@@ -471,8 +527,8 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
             id: "msg_welcome",
             sender: "tutor",
             text: isFrench 
-              ? `Bonjour ! Je suis ${initialCourseData.aiTutorPersona || "votre tuteur Gemini AI"}. Bienvenue dans le cours "${initialCourseData.title}". Je suis là pour vous aider à comprendre chaque chapitre et répondre à vos questions en temps réel. Quel sujet souhaitez-vous aborder en premier ?`
-              : `Hello! I am ${initialCourseData.aiTutorPersona || "your Gemini AI Tutor"}. Welcome to the "${initialCourseData.title}" course. I am here to help you understand each chapter and answer your questions in real-time. What topic would you like to discuss first?`,
+              ? `Bonjour ! Je suis ${initialCourseData.aiTutorPersona || "votre mentor de cours"}. Bienvenue dans le cours "${initialCourseData.title}". Je suis là pour vous aider à comprendre chaque chapitre et répondre à vos questions en temps réel. Quel sujet souhaitez-vous aborder en premier ?`
+              : `Hello! I am ${initialCourseData.aiTutorPersona || "your course mentor"}. Welcome to the "${initialCourseData.title}" course. I am here to help you understand each chapter and answer your questions in real-time. What topic would you like to discuss first?`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -501,8 +557,8 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
               id: "msg_welcome",
               sender: "tutor",
               text: isFrench 
-                ? `Bonjour ! Je suis ${data.aiTutorPersona || "votre tuteur"}. Bienvenue dans le cours "${data.title}". Je suis là pour vous aider à comprendre chaque chapitre et répondre à vos questions en temps réel. Quel sujet souhaitez-vous aborder en premier ?`
-                : `Hello! I am ${data.aiTutorPersona || "your tutor"}. Welcome to the "${data.title}" course. I am here to help you understand each chapter and answer your questions in real-time. What topic would you like to discuss first?`,
+                ? `Bonjour ! Je suis ${data.aiTutorPersona || "votre mentor de cours"}. Bienvenue dans le cours "${data.title}". Je suis là pour vous aider à comprendre chaque chapitre et répondre à vos questions en temps réel. Quel sujet souhaitez-vous aborder en premier ?`
+                : `Hello! I am ${data.aiTutorPersona || "your course mentor"}. Welcome to the "${data.title}" course. I am here to help you understand each chapter and answer your questions in real-time. What topic would you like to discuss first?`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }
           ]);
@@ -619,26 +675,6 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
   const handleSubmitQuiz = () => {
     if (selectedAnswers[activeChapterIndex] === undefined) return;
     setSubmittedAnswers(prev => ({ ...prev, [activeChapterIndex]: true }));
-  };
-
-  const handleSimulatePassFinalExam = () => {
-    const newSelectedAnswers: Record<number, number> = {};
-    const newSubmittedAnswers: Record<number, boolean> = {};
-
-    chapters.forEach((chap: any, idx: number) => {
-      const correctIdx = getCorrectAnswerIndex(chap);
-      newSelectedAnswers[idx] = correctIdx;
-      newSubmittedAnswers[idx] = true;
-    });
-
-    setSelectedAnswers(newSelectedAnswers);
-    setSubmittedAnswers(newSubmittedAnswers);
-
-    if (!studentInfo.fullName || !studentInfo.fullName.trim()) {
-      setShowStudentInfoModal(true);
-    } else {
-      setShowCertificate(true);
-    }
   };
 
   const handleSendQuestion = async (e: React.FormEvent) => {
@@ -765,7 +801,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
             >
               <MessageSquare className="w-4 h-4 text-indigo-400" />
               <span className="hidden sm:inline">
-                {isFrench ? "Tuteur IA" : "AI Tutor"}
+                {isFrench ? "Assistant de Cours" : "Course Assistant"}
               </span>
               {hasUnreadTutorMsg && !isChatOpen && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
@@ -798,16 +834,16 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={handleSimulatePassFinalExam}
+              onClick={handleOpenAdminCertEditor}
               className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
                 isDark
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
-                  : "bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 shadow-xs"
+                  ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20"
+                  : "bg-indigo-50 border-indigo-200 text-indigo-900 hover:bg-indigo-100 shadow-xs"
               }`}
-              title={isFrench ? "Simuler instantanément la réussite de l'examen et obtenir le certificat" : "Simulate passing all final exams and unlock certificate"}
+              title={isFrench ? "Éditer le certificat en mode Administrateur" : "Admin: Edit Certificate Details"}
             >
-              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span>{isFrench ? "⚡ Simuler Réussite Examen" : "⚡ Simulate Exam Pass"}</span>
+              <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+              <span>{isFrench ? "Admin: Éditer Certificat" : "Admin: Edit Certificate"}</span>
             </button>
 
             {isCourseComplete ? (
@@ -914,7 +950,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                 {isFrench ? `Syllabus du Chapitre ${activeChapterIndex + 1}` : `Chapter ${activeChapterIndex + 1} Lesson`}
               </span>
               <span className={`text-[10px] font-mono ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {course.aiTutorPersona || "ProPath AI Guide"}
+                {course.aiTutorPersona || "ProPath Faculty Advisor"}
               </span>
             </div>
 
@@ -1250,26 +1286,13 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
               {/* Submit / Feedback / Sequential Next Chapter Controls */}
               <div className="pt-3 flex flex-wrap items-center gap-3">
                 {!submittedAnswers[activeChapterIndex] ? (
-                  <>
-                    <button
-                      onClick={handleSubmitQuiz}
-                      disabled={selectedAnswers[activeChapterIndex] === undefined}
-                      className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/25 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      {isFrench ? "Soumettre ma réponse" : "Lock In Answer"}
-                    </button>
-                    <button
-                      onClick={handleSimulatePassFinalExam}
-                      className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
-                        isDark 
-                          ? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20" 
-                          : "bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 shadow-xs"
-                      }`}
-                    >
-                      <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                      <span>{isFrench ? "Simuler Réussite de l'Examen" : "Simulate Passing Final Exam"}</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handleSubmitQuiz}
+                    disabled={selectedAnswers[activeChapterIndex] === undefined}
+                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/25 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {isFrench ? "Soumettre ma réponse" : "Lock In Answer"}
+                  </button>
                 ) : (
                   <div className={`p-5 rounded-2xl border text-xs leading-relaxed w-full space-y-4 ${
                     isDark ? "bg-slate-950 border-slate-800 text-slate-200" : "bg-indigo-50/50 border-indigo-100 text-slate-800"
@@ -1381,8 +1404,8 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
           </div>
           <span className="text-xs font-bold font-display">
             {isFrench 
-              ? `Tuteur IA` 
-              : `Chat with Tutor`}
+              ? `Assistant de Cours` 
+              : `Chat with Mentor`}
           </span>
           {hasUnreadTutorMsg && (
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -1390,7 +1413,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
         </motion.button>
       )}
 
-      {/* FLOATING AI TUTOR CHAT WINDOW */}
+      {/* FLOATING COURSE CHAT WINDOW */}
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
@@ -1417,10 +1440,10 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                 </div>
                 <div>
                   <h3 className={`text-xs font-black font-display truncate max-w-[190px] ${isDark ? "text-white" : "text-slate-900"}`}>
-                    {course.aiTutorPersona || (isFrench ? "Sophie Laurent (Directrice Marketing)" : "AI Mentor Socrates")}
+                    {course.aiTutorPersona || (isFrench ? "Sophie Laurent (Directrice Marketing)" : "Faculty Mentor Socrates")}
                   </h3>
                   <span className={`text-[10px] font-mono block ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
-                    {isFrench ? "• En ligne (Tuteur IA)" : "• Online (AI Tutor)"}
+                    {isFrench ? "• En ligne (Mentor)" : "• Online (Course Mentor)"}
                   </span>
                 </div>
               </div>
@@ -1479,7 +1502,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
               {sendingQuestion && (
                 <div className={`flex items-center gap-2 text-[10px] font-mono pl-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500" />
-                  <span>{course.aiTutorPersona ? course.aiTutorPersona.split(' ')[0] : "Tutor"} {isFrench ? "réfléchit..." : "is typing..."}</span>
+                  <span>{course.aiTutorPersona ? course.aiTutorPersona.split(' ')[0] : "Mentor"} {isFrench ? "réfléchit..." : "is typing..."}</span>
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -1497,7 +1520,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                 disabled={sendingQuestion}
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
-                placeholder={isFrench ? "Posez une question sur le cours..." : "Ask your AI tutor a question..."}
+                placeholder={isFrench ? "Posez une question sur le cours..." : "Ask a question about the course..."}
                 className={`flex-1 text-xs p-2.5 rounded-xl border transition focus:outline-none focus:border-indigo-500 disabled:opacity-50 ${
                   isDark 
                     ? "bg-slate-900 border-slate-800 text-white placeholder-slate-500" 
@@ -1661,13 +1684,167 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
               </button>
 
               <div className="flex flex-col items-center">
+                {/* Admin Certificate Editing Control Banner */}
+                {isAdminEditingCert && (
+                  <div className="w-full mb-6 p-4 rounded-2xl bg-indigo-950 text-white border border-indigo-800 text-left print:hidden shadow-lg">
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-indigo-800">
+                      <div className="flex items-center gap-2">
+                        <Sliders className="w-4 h-4 text-amber-400" />
+                        <span className="text-xs font-black uppercase tracking-wider text-amber-300">
+                          {isFrench ? "Éditeur Administrateur de Certificat" : "Admin Certificate Customizer"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleResetCertDefaults}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-900 hover:bg-indigo-800 text-slate-300 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer"
+                        >
+                          <RotateCcw className="w-3 h-3 text-amber-400" />
+                          <span>{isFrench ? "Réinitialiser" : "Reset Defaults"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsAdminEditingCert(false)}
+                          className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{isFrench ? "Terminer" : "Done Editing"}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Nom du Récipiendaire" : "Recipient Name"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.fullName}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, fullName: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs font-bold focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Titre / Spécialité" : "Professional Title"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.title}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, title: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Organisme / Académie" : "Issuing Authority"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.organization}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, organization: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Titre de la Formation" : "Course Title"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.courseTitle}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, courseTitle: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs font-bold focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Code de Sécurité (ID)" : "Security Checksum ID"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.studentId}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, studentId: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Date de Délivrance" : "Issue Date"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.issueDate}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, issueDate: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2 md:col-span-3">
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Texte d'Homologation / Citation" : "Official Citation Statement"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.citationText}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, citationText: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Président du Conseil" : "Board President Name"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.boardPresident}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, boardPresident: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Titre du Président" : "President Title"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.boardPresidentTitle}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, boardPresidentTitle: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono text-indigo-300 uppercase block mb-1">
+                          {isFrench ? "Mentor Pédagogique" : "Faculty Mentor Name"}
+                        </label>
+                        <input
+                          type="text"
+                          value={certCustomData.facultyMentor}
+                          onChange={(e) => setCertCustomData({ ...certCustomData, facultyMentor: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-indigo-900/90 border border-indigo-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Header Badge */}
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-9 h-9 rounded-xl bg-indigo-950 border border-indigo-900 flex items-center justify-center text-amber-400 font-black text-xs shadow-xs">
                     PP
                   </div>
                   <span className="text-[11px] font-mono tracking-widest uppercase font-black text-indigo-950">
-                    ProPath Global Academy of Vocational Excellence
+                    {certCustomData.organization || "ProPath Global Academy of Vocational Excellence"}
                   </span>
                 </div>
 
@@ -1689,25 +1866,25 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                 {/* Recipient Full Name */}
                 <div className="my-3 py-3 px-8 rounded-2xl bg-amber-50/60 border border-amber-200/80 max-w-md w-full shadow-2xs">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-indigo-950 font-display tracking-tight">
-                    {studentInfo.fullName || "Student Full Name"}
+                    {certCustomData.fullName || studentInfo.fullName || "Student Full Name"}
                   </h2>
-                  {studentInfo.title && (
+                  {(certCustomData.title || studentInfo.title) && (
                     <span className="text-xs font-mono text-amber-800 block mt-1 font-bold">
-                      {studentInfo.title}
+                      {certCustomData.title || studentInfo.title}
                     </span>
                   )}
                 </div>
 
                 {/* Citation Statement */}
                 <p className="text-xs text-slate-600 italic max-w-xl leading-relaxed mt-2 font-medium">
-                  {isFrench 
+                  {certCustomData.citationText || (isFrench 
                     ? "En reconnaissance de la validation intégrale des modules de formation, des examens théoriques, des études de cas pratiques et de la maîtrise professionnelle démontrée dans le programme :" 
-                    : "For exceptional performance and successful completion of all core syllabus requirements, practical case studies, and final examination modules in:"}
+                    : "For exceptional performance and successful completion of all core syllabus requirements, practical case studies, and final examination modules in:")}
                 </p>
 
                 {/* Course Title */}
                 <h3 className="text-base sm:text-lg md:text-xl font-black text-indigo-950 mt-3 font-display px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 shadow-2xs">
-                  {course.title}
+                  {certCustomData.courseTitle || course.title}
                 </h3>
 
                 {/* Key Metadata Grid */}
@@ -1717,7 +1894,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                       {isFrench ? "Date de délivrance" : "Issue Date"}
                     </span>
                     <span className="text-xs text-slate-900 font-mono font-black">
-                      {new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {certCustomData.issueDate || new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                   </div>
                   <div>
@@ -1725,7 +1902,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                       {isFrench ? "Établissement Émetteur" : "Issuing Authority"}
                     </span>
                     <span className="text-xs text-indigo-900 font-mono font-black truncate block">
-                      {studentInfo.organization || "ProPath Academy"}
+                      {certCustomData.organization || studentInfo.organization || "ProPath Academy"}
                     </span>
                   </div>
                   <div>
@@ -1733,7 +1910,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                       {isFrench ? "Code d'Authentification" : "Security Checksum"}
                     </span>
                     <span className="text-xs text-amber-800 font-mono block font-black text-left sm:text-right">
-                      {studentInfo.studentId || `PPS-${Math.floor(100000 + Math.random() * 900000)}`}
+                      {certCustomData.studentId || studentInfo.studentId || `PPS-${Math.floor(100000 + Math.random() * 900000)}`}
                     </span>
                   </div>
                 </div>
@@ -1743,11 +1920,11 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                   {/* Left Signature */}
                   <div className="text-center sm:text-left space-y-1">
                     <div className="font-serif italic text-amber-900 text-lg font-bold tracking-wide">
-                      Dr. Marcus Vance
+                      {certCustomData.boardPresident || "Dr. Marcus Vance"}
                     </div>
                     <div className="h-[1px] w-32 bg-slate-300 mx-auto sm:mx-0 my-1" />
                     <span className="text-[9px] font-mono text-slate-500 block uppercase font-bold">
-                      {isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President"}
+                      {certCustomData.boardPresidentTitle || (isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President")}
                     </span>
                   </div>
 
@@ -1764,11 +1941,11 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                   {/* Right Signature */}
                   <div className="text-center sm:text-right space-y-1">
                     <div className="font-serif italic text-indigo-950 text-lg font-bold tracking-wide">
-                      {course.aiTutorPersona || "Sophie Laurent"}
+                      {certCustomData.facultyMentor || course.aiTutorPersona || "Sophie Laurent"}
                     </div>
                     <div className="h-[1px] w-32 bg-slate-300 mx-auto sm:mx-0 sm:ml-auto my-1" />
                     <span className="text-[9px] font-mono text-slate-500 block uppercase font-bold">
-                      {isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor"}
+                      {certCustomData.facultyMentorTitle || (isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor")}
                     </span>
                   </div>
                 </div>
@@ -1785,7 +1962,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
 
                   <button
                     onClick={() => {
-                      const text = `ProPath Verification ID: ${studentInfo.studentId} | Recipient: ${studentInfo.fullName} | Course: ${course.title}`;
+                      const text = `ProPath Verification ID: ${certCustomData.studentId || studentInfo.studentId} | Recipient: ${certCustomData.fullName || studentInfo.fullName} | Course: ${certCustomData.courseTitle || course.title}`;
                       navigator.clipboard.writeText(text);
                       setCopiedLink(true);
                       setTimeout(() => setCopiedLink(false), 3000);
@@ -1797,14 +1974,15 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                   </button>
 
                   <button
-                    onClick={() => {
-                      setShowCertificate(false);
-                      setShowStudentInfoModal(true);
-                    }}
-                    className="py-2.5 px-4 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer transition flex items-center justify-center gap-1.5 shadow-xs"
+                    onClick={() => setIsAdminEditingCert(!isAdminEditingCert)}
+                    className={`py-2.5 px-4 rounded-xl border text-xs font-bold cursor-pointer transition flex items-center justify-center gap-1.5 shadow-xs ${
+                      isAdminEditingCert 
+                        ? "bg-amber-50 border-amber-300 text-amber-900 font-black" 
+                        : "border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-950"
+                    }`}
                   >
-                    <Edit3 className="w-4 h-4 text-slate-600" />
-                    <span>{isFrench ? "Modifier Mes Infos" : "Edit Info"}</span>
+                    <Sliders className="w-4 h-4 text-indigo-700" />
+                    <span>{isAdminEditingCert ? (isFrench ? "Fermer l'Éditeur" : "Close Editor") : (isFrench ? "Éditer Certificat (Admin)" : "Edit Certificate (Admin)")}</span>
                   </button>
 
                   <button
@@ -2156,6 +2334,117 @@ function getBuiltInCourse(courseId: string, isFrench: boolean): any {
             ],
             correctAnswer: 0,
             explanation: isFrench ? "Un ratio LTV:CAC de 3:1 ou plus garantit la rentabilité globale des dépenses d'acquisition marketing." : "An LTV:CAC ratio of 3:1 or higher indicates a scalable, profitable customer acquisition model."
+          }
+        }
+      ]
+    };
+  }
+
+  if (cId.includes("creativedesign") || cId.includes("design") || cId.includes("spatial") || cId.includes("ux") || cId.includes("ui")) {
+    return {
+      id: "creativedesign_native",
+      title: isFrench 
+        ? "ProPath Académie - Design Numérique Créatif, Interfaces Spatiales & Architecture UI/UX" 
+        : "ProPath Academy - Creative Digital Design, Spatial UI & UX Architecture Masterclass",
+      industry: "Creative Digital Design & Spatial Interfaces",
+      aiTutorPersona: isFrench ? "Alexandre Mercier (Directeur Artistique & Designer Spatial UI)" : "Alexandre Mercier (Creative Director & Spatial UI Designer)",
+      chapters: [
+        {
+          id: "ch1",
+          title: isFrench ? "1. Fondations UI/UX, Design Systems & Architecture de Tokens Figma" : "1. UI/UX Foundations, Design Systems & Figma Token Architecture",
+          summary: isFrench ? "Maîtriser la hiérarchie visuelle, les systèmes de grilles responsives, la théorie des couleurs et l'architecture des Design Systems." : "Master visual hierarchy, responsive layout systems, color theory, component tokens, and scalable Design Systems.",
+          sections: [
+            {
+              title: isFrench ? "Leçon 1 : Ergonomie Web, Règles de la Gestalt & Composition Visuelle" : "Lesson 1: Digital UX Ergonomics, Gestalt Rules & Visual Composition",
+              content: isFrench
+                ? "Le design d'interface moderne s'appuie sur la psychologie cognitive et la perception humaine. Appliquez les lois de la Gestalt (proximité, similitude, continuité) et la règle des tiers pour guider naturellement le regard de l'utilisateur vers les actions prioritaires."
+                : "Modern digital interface design leverages cognitive psychology and visual perception. Master Gestalt laws (proximity, similarity, continuity) and layout grids to guide user attention toward primary call-to-action elements with zero friction.",
+              keyPoints: [
+                isFrench ? "Loi de Proximité : Regrouper visuellement les éléments ayant une fonction liée" : "Law of Proximity: Group related UI elements together visually",
+                isFrench ? "Hiérarchie Typographique : Définir des échelles proportionnelles (Ratio Major Third 1.25)" : "Typography Scale: Establish proportional type scales (e.g., Major Third 1.25x ratio)",
+                isFrench ? "Espace Négatif : Utiliser les marges pour donner du souffle et de la clarté" : "Negative Space: Use generous white space padding to elevate clarity"
+              ]
+            },
+            {
+              title: isFrench ? "Leçon 2 : Architecture de Design Systems & Tokens Figma" : "Lesson 2: Design System Architecture, Figma Components & Tokens",
+              content: isFrench
+                ? "Un Design System unifie les équipes design et ingénierie. Créez des tokens atomiques pour les couleurs, la typographie, les rayons de bordure et les ombres. Configurez des composants modulaires dans Figma avec Auto Layout et propriétés de variantes."
+                : "A unified Design System bridges product design and engineering codebases. Construct atomic design tokens for color palettes, typography variables, spatial padding, and border radius rules synced with CSS variables.",
+              keyPoints: [
+                isFrench ? "Tokens Atomiques : Définir les variables de base (Primary, Neutral, Padding)" : "Atomic Tokens: Standardize base variables for color, type, and spacing",
+                isFrench ? "Figma Auto Layout : Concevoir des composants fluides et auto-adaptatifs" : "Figma Auto Layout: Build responsive components that adapt dynamically",
+                isFrench ? "Documentation : Décrire les états (Hover, Active, Disabled, Focus)" : "State Telemetry: Document component interactive states clearly for frontend devs"
+              ]
+            }
+          ],
+          quiz: {
+            question: isFrench ? "Quel est l'avantage clé d'utiliser des Design Tokens dans une équipe produit ?" : "What is the key benefit of leveraging Design Tokens in product design?",
+            options: [
+              isFrench ? "Garantir une source de vérité unique réutilisable directement dans le code frontend" : "Ensuring a single source of truth synced directly with frontend CSS code",
+              isFrench ? "Accélérer la vitesse d'impression des affiches papier" : "Increasing paper poster printing speed",
+              isFrench ? "Supprimer la nécessité d'effectuer des tests utilisateurs" : "Eliminating the need for user testing",
+              isFrench ? "Masquer les images sur les appareils mobiles" : "Hiding images on mobile displays"
+            ],
+            correctAnswer: 0,
+            explanation: isFrench ? "Les Design Tokens traduisent les choix visuels en variables informatiques directement exploitables par les développeurs." : "Design tokens serve as shared variables connecting UI design tools directly to production code."
+          }
+        },
+        {
+          id: "ch2",
+          title: isFrench ? "2. Design Graphique Assisté par l'IA (Midjourney, Flux & Vector AI)" : "2. AI-Assisted Visual Design, Branding & Generative Prompts",
+          summary: isFrench ? "Exploiter l'IA générative pour concevoir des identités de marque, des maquettes 3D, des illustrations et des jeux de pictos." : "Leverage generative AI to craft brand identities, 3D product mockups, custom illustration systems, and vector icon sets.",
+          sections: [
+            {
+              title: isFrench ? "Leçon 1 : Ingénierie de Prompts Artistiques & Midjourney v6 / Flux" : "Lesson 1: Artistic Prompt Engineering for Midjourney v6 & Flux",
+              content: isFrench
+                ? "L'IA générative révolutionne la création visuelle. Apprenez à composer des prompts artistiques précis en spécifiant le style graphique (ex: Minimalist vector illustration, 3D claymation, Isometric tech UI), l'éclairage studio et la palette de couleurs."
+                : "Generative AI transforms visual production speeds. Master prompt engineering syntax by specifying art style parameters (e.g. Minimalist vector illustration, 3D glassmorphism, Isometric UI), camera lens depth, and lighting.",
+              keyPoints: [
+                isFrench ? "Paramètres de Style : Utiliser --ar, --stylize et --v 6 pour contrôler le rendu" : "Style Controls: Utilize aspect ratios, stylize parameters, and lighting prompts",
+                isFrench ? "Consistance de Marque : Utiliser les références de style (Style References --sref)" : "Brand Consistency: Maintain style coherence using style reference parameters",
+                isFrench ? "Vectorisation : Convertir les visuels IA en SVG éditables avec Vector AI" : "Vectorization: Convert AI bitmap outputs into scalable, clean SVG assets"
+              ]
+            }
+          ],
+          quiz: {
+            question: isFrench ? "Comment garantir la cohérence visuelle d'une marque lors de la génération d'images par IA ?" : "How can brand visual consistency be maintained when generating AI assets?",
+            options: [
+              isFrench ? "En utilisant des références de style (--sref) et des guides de palettes de couleurs stricts dans les prompts" : "Using style reference parameters (--sref) and strict color palette guidelines in prompts",
+              isFrench ? "En régénérant 100 fois la même image au hasard" : "Randomly regenerating the prompt 100 times",
+              isFrench ? "En supprimant tous les mots-clés du prompt" : "Removing all descriptive keywords from the prompt",
+              isFrench ? "En désactivant le processeur graphique" : "Disabling GPU hardware acceleration"
+            ],
+            correctAnswer: 0,
+            explanation: isFrench ? "Les références de style et les contraintes de palette maintiennent la charte graphique globale." : "Style references lock in aesthetic moodboards and color palettes across generative runs."
+          }
+        },
+        {
+          id: "ch3",
+          title: isFrench ? "3. Design d'Interfaces Spatiales 3D & Expériences Immersives WebGL" : "3. 3D Spatial UI Design, AR/VR & Immersive Canvas",
+          summary: isFrench ? "Concevoir pour le Spatial Computing (Apple Vision Pro, Quest), la profondeur 3D, l'ergonomie oculaire et le WebGL interactif." : "Design for Spatial Computing (Apple Vision Pro, Meta Quest), 3D depth layers, eye-gaze ergonomics, and interactive WebGL canvas.",
+          sections: [
+            {
+              title: isFrench ? "Leçon 1 : Ergonomie Spatiale, Rayons Visuels & Modélisation 3D" : "Lesson 1: Spatial Ergonomics, Visual Rays & Volumetric UI Containers",
+              content: isFrench
+                ? "Dans un environnement informatique spatial (AR/VR), l'écran traditionnel disparaît. Concevez des conteneurs UI volumétriques positionnés dans le champ de vision naturel de l'utilisateur (45° d'amplitude oculaire)."
+                : "In spatial computing (AR/VR), physical screens give way to volumetric canvases. Position UI windows within natural human gaze arcs (45-degree visual field) and utilize glassmorphic depth cues.",
+              keyPoints: [
+                isFrench ? "Champ Visuel Confortable : Placer le contenu principal dans la zone centrale de 45°" : "Comfortable Gaze Zone: Position core UI elements within the central 45° visual cone",
+                isFrench ? "Depth Cues : Utiliser l'ombre portée et le flou d'arrière-plan (Glassmorphism) pour la profondeur" : "Depth Cues: Employ subtle drop shadows and background blur to convey spatial depth",
+                isFrench ? "Interactions Regard & Pincement : Concevoir des états de survol élargis pour la sélection" : "Eye-Gaze & Pinch: Size targets generously (≥44pt) for effortless eye tracking select"
+              ]
+            }
+          ],
+          quiz: {
+            question: isFrench ? "Pourquoi la taille des cibles tactiles et d'interaction oculaire doit-elle être plus importante en Design Spatial 3D ?" : "Why must interactive touch and eye-gaze targets be sized more generously in 3D Spatial UI design?",
+            options: [
+              isFrench ? "Pour compenser la micro-imprécision du suivi oculaire et éviter la fatigue visuelle" : "To accommodate subtle eye-tracking variance and prevent ocular strain",
+              isFrench ? "Parce que les processeurs VR ne peuvent pas afficher de petits boutons" : "Because VR headsets cannot render small UI buttons",
+              isFrench ? "Pour augmenter le coût du casque AR" : "To inflate AR headset hardware costs",
+              isFrench ? "Pour empêcher l'utilisateur de cliquer sur l'écran" : "To prevent users from tapping on virtual glass"
+            ],
+            correctAnswer: 0,
+            explanation: isFrench ? "Une taille minimale généreuse (ex: 44pt+) facilite le ciblage par le regard sans exiger un effort visuel intense." : "Generous visual hit targets allow fluid gaze selection without causing ocular fatigue."
           }
         }
       ]

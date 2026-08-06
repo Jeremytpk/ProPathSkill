@@ -231,11 +231,11 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-[10px] font-bold font-mono text-purple-400 uppercase tracking-wider">
                 <Sparkles className="w-3 h-3 text-purple-400 animate-pulse" />
-                Gemini 2.5 Flash AI
+                ProPath AI Engine
               </span>
             </div>
             <h1 className={`text-xl sm:text-2xl font-black font-display tracking-tight mt-1 ${isDark ? "text-white" : "text-slate-900"}`}>
-              {isFrench ? "Académie Marketing Digital Gemini IA" : "Digital Marketing AI Academy"}
+              {isFrench ? "Académie Marketing Digital ProPath" : "Digital Marketing Academy"}
             </h1>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
         </div>
       </div>
 
-      {/* 1. Gemini AI Course Generator Section */}
+      {/* 1. AI Course Generator Section */}
       <div className={`rounded-2xl border p-6 sm:p-8 relative overflow-hidden transition-all ${
         isDark 
           ? "bg-gradient-to-br from-indigo-950/80 via-slate-900 to-purple-950/60 border-indigo-500/40 shadow-2xl" 
@@ -260,17 +260,17 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-2 text-purple-500 font-bold text-xs uppercase tracking-wider mb-2 font-mono">
             <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
-            {isFrench ? "Générateur de Cours IA Temps Réel" : "Real-time Gemini AI Course Engine"}
+            {isFrench ? "Création de Cours ProPath" : "ProPath Course Creation Engine"}
           </div>
           
           <h2 className={`text-2xl sm:text-3xl font-black tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"}`}>
-            {isFrench ? "Créer un cours sur mesure en Marketing Digital" : "Generate a Custom Digital Marketing Course"}
+            {isFrench ? "Créer un cours sur mesure en Marketing Digital" : "Create a Custom Digital Marketing Course"}
           </h2>
           
           <p className={`text-xs sm:text-sm mb-6 leading-relaxed ${isDark ? "text-slate-200" : "text-slate-700 font-medium"}`}>
             {isFrench 
-              ? "Saisissez n'importe quel sujet de marketing digital (ex: TikTok Virality, Meta Ads ROAS, SEO IA). Notre intégration Gemini construira immédiatement un cours complet avec tuteur intelligent et quiz certifiants !"
-              : "Type any digital marketing concept (e.g. TikTok Virality, Meta Ads ROAS, AI-Powered SEO). Gemini AI instantly creates a 3-chapter interactive course with an AI tutor and quizzes!"}
+              ? "Saisissez n'importe quel sujet de marketing digital (ex: TikTok Virality, Meta Ads ROAS, SEO IA). Notre plateforme construira immédiatement un cours complet avec mentor expert et quiz certifiants !"
+              : "Type any digital marketing concept (e.g. TikTok Virality, Meta Ads ROAS, AI-Powered SEO). Instantly creates a 3-chapter interactive course with expert guidance and quizzes!"}
           </p>
 
           {/* Input Box */}
@@ -304,12 +304,12 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{isFrench ? "Génération avec Gemini..." : "Gemini Generating..."}</span>
+                  <span>{isFrench ? "Préparation du cours..." : "Preparing Course..."}</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-amber-300" />
-                  <span>{isFrench ? "Générer le Cours IA" : "Generate Course with AI"}</span>
+                  <span>{isFrench ? "Créer le Cours" : "Create Course"}</span>
                 </>
               )}
             </button>
@@ -358,7 +358,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
                 {isFrench ? "Parcours Certifiants Marketing Digital" : "Featured Digital Marketing Curriculums"}
               </h2>
               <p className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-                {isFrench ? "Cours validés avec assistance Gemini IA et certification" : "Verified curriculums with Gemini AI interactive tutoring"}
+                {isFrench ? "Cours validés avec accompagnement interactif et certification" : "Verified curriculums with interactive learning and certification"}
               </p>
             </div>
           </div>
@@ -385,7 +385,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
                   </span>
                   <div className="flex items-center gap-1.5 text-xs font-mono text-amber-500 font-bold">
                     <Award className="w-4 h-4" />
-                    <span>Gemini Tutor</span>
+                    <span>ProPath Faculty</span>
                   </div>
                 </div>
 
@@ -421,7 +421,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
                 className="mt-6 w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-purple-600/20"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{isFrench ? "Lancer le cours avec Gemini IA" : "Start Course with Gemini AI"}</span>
+                <span>{isFrench ? "Lancer le cours interactif" : "Start Interactive Course"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

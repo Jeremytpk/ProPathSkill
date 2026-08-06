@@ -3,16 +3,34 @@ import { EducationResource } from "../types";
 import { ExternalLink, ShieldCheck, X, ArrowRight, Hourglass } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AICourseWorkspace } from "./AICourseWorkspace";
+import { DigitalMarketingCourseHub } from "./DigitalMarketingCourseHub";
+import { CreativeDesignCourseHub } from "./CreativeDesignCourseHub";
 
 interface RedirectionModalProps {
   resource: EducationResource | null;
   onClose: () => void;
   language?: string;
+  onOpenDigitalMarketingHub?: () => void;
+  onOpenCreativeDesignHub?: () => void;
 }
 
-export function RedirectionModal({ resource, onClose, language = "english" }: RedirectionModalProps) {
+export function RedirectionModal({ 
+  resource, 
+  onClose, 
+  language = "english", 
+  onOpenDigitalMarketingHub,
+  onOpenCreativeDesignHub
+}: RedirectionModalProps) {
   const [countdown, setCountdown] = useState(5);
-  const isAICourse = resource?.link?.startsWith("propathskill://course/");
+  const isAICourse = 
+    Boolean(resource?.link?.startsWith("propathskill://course/")) ||
+    resource?.platform === "ProPath Learning School" ||
+    Boolean(resource?.name?.toLowerCase().includes("propath"));
+
+  const isCreativeDesignCourse = 
+    Boolean(resource?.link?.includes("creativedesign")) ||
+    Boolean(resource?.name?.toLowerCase().includes("design")) ||
+    Boolean(resource?.type?.toLowerCase().includes("design"));
 
   useEffect(() => {
     if (!resource || isAICourse) return;
@@ -39,13 +57,40 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
   if (!resource) return null;
 
   if (isAICourse) {
-    const courseId = resource.link.replace("propathskill://course/", "");
+    if (isCreativeDesignCourse) {
+      if (onOpenCreativeDesignHub) {
+        onOpenCreativeDesignHub();
+        onClose();
+        return null;
+      }
+      return (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/95 p-2 sm:p-6 backdrop-blur-md flex flex-col">
+          <div className="max-w-6xl w-full mx-auto my-auto">
+            <CreativeDesignCourseHub
+              onBack={onClose}
+              language={language}
+              theme="dark"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (onOpenDigitalMarketingHub) {
+      onOpenDigitalMarketingHub();
+      onClose();
+      return null;
+    }
     return (
-      <AICourseWorkspace
-        courseId={courseId}
-        onClose={onClose}
-        language={language}
-      />
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/95 p-2 sm:p-6 backdrop-blur-md flex flex-col">
+        <div className="max-w-6xl w-full mx-auto my-auto">
+          <DigitalMarketingCourseHub
+            onBack={onClose}
+            language={language}
+            theme="dark"
+          />
+        </div>
+      </div>
     );
   }
 
@@ -54,6 +99,7 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
     onClose();
   };
 
+  const isFrench = language?.toLowerCase() === "french";
   const progressPercent = (countdown / 5) * 100;
 
   return (
@@ -99,14 +145,16 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
             </div>
 
             <span className="text-[10px] tracking-widest uppercase font-bold text-indigo-400">
-              Free Launchpad Redirector
+              {isFrench ? "Redirection Vers la Plateforme" : "Free Launchpad Redirector"}
             </span>
             <h3 className="text-lg font-bold font-display text-white mt-1">
-              Leaving ProPath
+              {isFrench ? "Redirection depuis ProPath" : "Leaving ProPath"}
             </h3>
 
             <p className="text-xs text-slate-400 mt-2 px-2">
-              You are being securely redirected to the educational resource hosted on <span className="text-slate-200 font-semibold">{resource.platform}</span>:
+              {isFrench 
+                ? <>Vous allez être redirigé en toute sécurité vers la ressource hébergée sur <span className="text-slate-200 font-semibold">{resource.platform}</span> :</>
+                : <>You are being securely redirected to the educational resource hosted on <span className="text-slate-200 font-semibold">{resource.platform}</span>:</>}
             </p>
 
             {/* Course Information Box */}
@@ -116,7 +164,7 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
                 {resource.name}
               </h4>
               <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                <span>Duration:</span> <span className="text-slate-200 font-mono">{resource.duration}</span>
+                <span>{isFrench ? "Durée :" : "Duration:"}</span> <span className="text-slate-200 font-mono">{resource.duration}</span>
               </p>
             </div>
 
@@ -124,12 +172,12 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
             <div className="flex items-start gap-2 bg-indigo-500/5 rounded-lg p-3 border border-indigo-500/10 text-left w-full text-xs text-slate-300">
               <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold text-white">Records Safe:</span> Your assessment profiles, career-growth indices, and goal planners remain safely stored in our cloud registry.
+                <span className="font-semibold text-white">{isFrench ? "Données sécurisées :" : "Records Safe:"}</span> {isFrench ? "Vos profils d'évaluation et objectifs restent enregistrés en toute sécurité sur le cloud." : "Your assessment profiles, career-growth indices, and goal planners remain safely stored in our cloud registry."}
               </div>
             </div>
 
             <div className="text-sm text-slate-400 mt-5 mb-1 font-mono">
-              Auto-redirecting in <span className="text-indigo-400 font-bold font-display text-base">{countdown}</span> seconds...
+              {isFrench ? "Redirection automatique dans " : "Auto-redirecting in "}<span className="text-indigo-400 font-bold font-display text-base">{countdown}</span> {isFrench ? "secondes..." : "seconds..."}
             </div>
 
             {/* Controls */}
@@ -138,13 +186,13 @@ export function RedirectionModal({ resource, onClose, language = "english" }: Re
                 onClick={onClose}
                 className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700/50 py-2 rounded-xl text-xs font-bold transition"
               >
-                Cancel Redirect
+                {isFrench ? "Annuler" : "Cancel Redirect"}
               </button>
               <button
                 onClick={handleProceedImmediately}
                 className="w-full accent-gradient text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 hover:opacity-95 hover:shadow-lg hover:shadow-indigo-500/20"
               >
-                Proceed Now
+                {isFrench ? "Continuer" : "Proceed Now"}
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

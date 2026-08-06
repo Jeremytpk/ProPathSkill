@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CareerReport, CareerTrack, EducationResource, MentorGoal } from "../types";
 import { CircularDial } from "./CircularDial";
-import { SalarySimulator } from "./SalarySimulator";
+import { SalarySimulator, getSalaryValueAndFormatted, CURRENCIES } from "./SalarySimulator";
 import { SkillsGrowth } from "./SkillsGrowth";
 import { MentorshipGoals } from "./MentorshipGoals";
 import { RedirectionModal } from "./RedirectionModal";
@@ -31,14 +31,26 @@ interface DashboardProps {
   onUpdateGoals: (goals: MentorGoal[]) => void;
   selectedLanguage: "english" | "french";
   selectedCountry: string;
+  onOpenDigitalMarketingHub?: () => void;
+  onOpenCreativeDesignHub?: () => void;
 }
 
-export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCountry }: DashboardProps) {
+export function Dashboard({ 
+  report, 
+  onUpdateGoals, 
+  selectedLanguage, 
+  selectedCountry, 
+  onOpenDigitalMarketingHub,
+  onOpenCreativeDesignHub
+}: DashboardProps) {
   const { recommendedTracks } = report;
   const isFrench = selectedLanguage === "french";
   
   // Track active track index
   const [activeTrackIdx, setActiveTrackIdx] = useState(0);
+
+  // Salary Currency Mode (USD vs LOCAL)
+  const [salaryCurrencyMode, setSalaryCurrencyMode] = useState<"USD" | "LOCAL">("USD");
   
   // Selected resource for countdown redirection modal
   const [selectedResource, setSelectedResource] = useState<EducationResource | null>(null);
@@ -389,16 +401,33 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
               </div>
             </div>
 
-            <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-800/50 flex gap-3 items-center">
-              <div className="p-2 bg-fuchsia-500/10 rounded-lg text-fuchsia-400 border border-fuchsia-500/20 shrink-0">
-                <TrendingUp className="w-5 h-5" />
+            <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-800/50 flex justify-between items-center gap-2">
+              <div className="flex gap-3 items-center">
+                <div className="p-2 bg-fuchsia-500/10 rounded-lg text-fuchsia-400 border border-fuchsia-500/20 shrink-0">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{t.peakSalary}</p>
+                  <p className="text-xs font-bold text-slate-200 mt-0.5">
+                    {getSalaryValueAndFormatted(
+                      activeTrack.salaryTimeline[activeTrack.salaryTimeline.length - 1]?.salary || 0,
+                      selectedCountry,
+                      salaryCurrencyMode,
+                      isFrench
+                    ).formatted}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{t.peakSalary}</p>
-                <p className="text-xs font-semibold text-slate-200 mt-0.5">
-                  {(activeTrack.salaryTimeline[activeTrack.salaryTimeline.length - 1]?.salary || 0).toLocaleString()} USD/Yr
-                </p>
-              </div>
+              {CURRENCIES[selectedCountry]?.code !== "USD" && (
+                <button
+                  type="button"
+                  onClick={() => setSalaryCurrencyMode(prev => prev === "USD" ? "LOCAL" : "USD")}
+                  className="px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-slate-900 border border-slate-700/80 text-indigo-300 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-1 shrink-0"
+                  title={isFrench ? "Changer de devise" : "Switch currency"}
+                >
+                  <span>{salaryCurrencyMode === "USD" ? "USD ($)" : CURRENCIES[selectedCountry]?.code}</span>
+                </button>
+              )}
             </div>
 
             <div className="p-3 bg-slate-950/40 rounded-2xl border border-slate-800/50 flex gap-3 items-center sm:col-span-2 md:col-span-1">
@@ -433,6 +462,8 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
             trackTitle={activeTrack.title}
             selectedLanguage={selectedLanguage}
             selectedCountry={selectedCountry}
+            currencyMode={salaryCurrencyMode}
+            onCurrencyChange={setSalaryCurrencyMode}
           />
         </div>
 
@@ -826,6 +857,8 @@ export function Dashboard({ report, onUpdateGoals, selectedLanguage, selectedCou
         resource={selectedResource}
         onClose={() => setSelectedResource(null)}
         language={selectedLanguage}
+        onOpenDigitalMarketingHub={onOpenDigitalMarketingHub}
+        onOpenCreativeDesignHub={onOpenCreativeDesignHub}
       />
 
       {/* SECURE APPLICATION PLACEMENT MODAL */}

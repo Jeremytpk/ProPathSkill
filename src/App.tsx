@@ -5,11 +5,12 @@ import { ReportHeader } from "./components/ReportHeader";
 import { ConfirmationModal } from "./components/ConfirmationModal";
 import { AdminPortal } from "./components/AdminPortal";
 import { DigitalMarketingCourseHub } from "./components/DigitalMarketingCourseHub";
+import { CreativeDesignCourseHub } from "./components/CreativeDesignCourseHub";
 import { CareerReport, MentorGoal } from "./types";
 import { getReport } from "./lib/firebase";
 import { 
   Sparkles, Compass, AlertCircle, RefreshCw, 
-  ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight, Megaphone,
+  ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight, Megaphone, Palette,
   Menu, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -33,6 +34,7 @@ export default function App() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
   const [showDigitalMarketingHub, setShowDigitalMarketingHub] = useState(false);
+  const [showCreativeDesignHub, setShowCreativeDesignHub] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -252,20 +254,20 @@ export default function App() {
   };
 
   const handleLogoClick = () => {
-    if (report) {
-      setIsConfirmOpen(true);
-    }
-  };
-
-  const confirmReset = () => {
-    setReport(null);
+    setShowDigitalMarketingHub(false);
+    setShowCreativeDesignHub(false);
     setIsAdminView(false);
+    setReport(null);
     setHasOnboarded(false);
     localStorage.removeItem("propath_active_report");
     // Clean up URL parameters if any
     const url = new URL(window.location.href);
     url.searchParams.delete("reportId");
     window.history.pushState({}, "", url.toString());
+  };
+
+  const confirmReset = () => {
+    handleLogoClick();
   };
 
   return (
@@ -290,7 +292,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div 
             onClick={handleLogoClick}
-            className={`flex items-center gap-3 select-none ${report ? "cursor-pointer group hover:opacity-90 transition-all duration-200" : ""}`}
+            className="flex items-center gap-3 select-none cursor-pointer group hover:opacity-90 transition-all duration-200"
+            title={selectedLanguage === "french" ? "Retour à l'accueil ProPath" : "Navigate back to ProPath Home"}
             id="propath-logo-and-title-nav"
           >
             <ProPathLogo className="h-[45px] w-auto rounded-[7px] transition-transform group-hover:scale-105" />
@@ -339,6 +342,7 @@ export default function App() {
             <button
               onClick={() => {
                 setShowDigitalMarketingHub(!showDigitalMarketingHub);
+                setShowCreativeDesignHub(false);
                 setIsAdminView(false);
               }}
               className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm ${
@@ -354,6 +358,28 @@ export default function App() {
               <Megaphone className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
               <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
               <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            </button>
+
+            {/* Creative Digital Design AI Courses Button */}
+            <button
+              onClick={() => {
+                setShowCreativeDesignHub(!showCreativeDesignHub);
+                setShowDigitalMarketingHub(false);
+                setIsAdminView(false);
+              }}
+              className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm ${
+                showCreativeDesignHub
+                  ? "border-pink-500 bg-pink-500/20 text-pink-300"
+                  : theme === "dark"
+                    ? "border-pink-500/40 bg-pink-950/40 text-pink-300 hover:bg-pink-900/60 hover:text-white hover:border-pink-400"
+                    : "border-pink-300 bg-pink-50 text-pink-700 hover:bg-pink-100 hover:text-pink-900 hover:border-pink-400"
+              }`}
+              title={selectedLanguage === "french" ? "Cours Design Numérique (IA Gemini)" : "Creative Design AI Courses"}
+              id="creative-design-courses-button"
+            >
+              <Palette className="w-3.5 h-3.5 text-pink-400 fill-pink-400/20" />
+              <span>{selectedLanguage === "french" ? "Design Numérique (IA)" : "Creative Design AI"}</span>
+              <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
             </button>
 
             {/* Admin Portal Toggle Link */}
@@ -462,6 +488,7 @@ export default function App() {
               <button
                 onClick={() => {
                   setShowDigitalMarketingHub(!showDigitalMarketingHub);
+                  setShowCreativeDesignHub(false);
                   setIsAdminView(false);
                   setIsMobileMenuOpen(false);
                 }}
@@ -478,6 +505,29 @@ export default function App() {
                   <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
                 </div>
                 <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              </button>
+
+              {/* Creative Digital Design AI Courses Button */}
+              <button
+                onClick={() => {
+                  setShowCreativeDesignHub(!showCreativeDesignHub);
+                  setShowDigitalMarketingHub(false);
+                  setIsAdminView(false);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
+                  showCreativeDesignHub
+                    ? "border-pink-500 bg-pink-500/20 text-pink-300"
+                    : theme === "dark"
+                      ? "border-pink-500/40 bg-pink-950/40 text-pink-300 hover:bg-pink-900/60"
+                      : "border-pink-300 bg-pink-50 text-pink-700 hover:bg-pink-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-pink-400 fill-pink-400/20" />
+                  <span>{selectedLanguage === "french" ? "Design Numérique (IA)" : "Creative Design AI"}</span>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
               </button>
 
               {/* Admin Portal Link */}
@@ -584,6 +634,21 @@ export default function App() {
           >
             <DigitalMarketingCourseHub
               onBack={() => setShowDigitalMarketingHub(false)}
+              language={selectedLanguage}
+              theme={theme}
+            />
+          </motion.div>
+        ) : showCreativeDesignHub ? (
+          /* Route to Standalone Creative Digital Design AI Academy Page */
+          <motion.div
+            key="creative-design-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <CreativeDesignCourseHub
+              onBack={() => setShowCreativeDesignHub(false)}
               language={selectedLanguage}
               theme={theme}
             />
@@ -767,6 +832,7 @@ export default function App() {
                   report={report}
                   onRestart={confirmReset}
                   isSharedView={!report.id.startsWith("local_")}
+                  selectedLanguage={selectedLanguage}
                 />
 
                 {/* Dashboard grid visualizers */}
@@ -775,6 +841,14 @@ export default function App() {
                   onUpdateGoals={handleUpdateGoals}
                   selectedLanguage={selectedLanguage}
                   selectedCountry={selectedCountry}
+                  onOpenDigitalMarketingHub={() => {
+                    setShowDigitalMarketingHub(true);
+                    setShowCreativeDesignHub(false);
+                  }}
+                  onOpenCreativeDesignHub={() => {
+                    setShowCreativeDesignHub(true);
+                    setShowDigitalMarketingHub(false);
+                  }}
                 />
               </motion.div>
             )}

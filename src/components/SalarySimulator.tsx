@@ -1,57 +1,124 @@
 import React, { useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { SalaryMilestone } from "../types";
-import { DollarSign, Award } from "lucide-react";
+import { DollarSign, Award, Globe } from "lucide-react";
 
 interface SalarySimulatorProps {
   timeline: SalaryMilestone[];
   trackTitle: string;
   selectedLanguage: "english" | "french";
   selectedCountry: string;
+  currencyMode?: "USD" | "LOCAL";
+  onCurrencyChange?: (mode: "USD" | "LOCAL") => void;
 }
 
-const CURRENCIES: Record<string, { code: string; symbol: string; rate: number }> = {
-  "DRCongo": { code: "CDF", symbol: "FC", rate: 2800 },
-  "Senegal": { code: "XOF", symbol: "FCFA", rate: 600 },
-  "Ivory Coast": { code: "XOF", symbol: "FCFA", rate: 600 },
-  "Gabon": { code: "XAF", symbol: "FCFA", rate: 600 },
-  "Congo": { code: "XAF", symbol: "FCFA", rate: 600 },
-  "France": { code: "EUR", symbol: "€", rate: 0.92 },
-  "Canada": { code: "CAD", symbol: "C$", rate: 1.36 },
-  "United States": { code: "USD", symbol: "$", rate: 1.0 },
+export const CURRENCIES: Record<string, { code: string; symbol: string; rate: number; name: string }> = {
+  "DRCongo": { code: "CDF", symbol: "FC", rate: 2800, name: "Franc Congolais" },
+  "Senegal": { code: "XOF", symbol: "FCFA", rate: 600, name: "Franc CFA" },
+  "Ivory Coast": { code: "XOF", symbol: "FCFA", rate: 600, name: "Franc CFA" },
+  "Gabon": { code: "XAF", symbol: "FCFA", rate: 600, name: "Franc CFA" },
+  "Congo": { code: "XAF", symbol: "FCFA", rate: 600, name: "Franc CFA" },
+  "Cameroon": { code: "XAF", symbol: "FCFA", rate: 600, name: "Franc CFA" },
+  "France": { code: "EUR", symbol: "€", rate: 0.92, name: "Euro" },
+  "Canada": { code: "CAD", symbol: "C$", rate: 1.36, name: "Canadian Dollar" },
+  "United States": { code: "USD", symbol: "$", rate: 1.0, name: "US Dollar" },
 };
 
-export function SalarySimulator({ timeline, trackTitle, selectedLanguage, selectedCountry }: SalarySimulatorProps) {
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const isFrench = selectedLanguage === "french";
+export function getSalaryValueAndFormatted(
+  rawSalary: number,
+  selectedCountry: string,
+  mode: "USD" | "LOCAL",
+  isFrench: boolean
+) {
+  const localInfo = CURRENCIES[selectedCountry] || { code: "USD", symbol: "$", rate: 1.0, name: "US Dollar" };
 
-  const info = CURRENCIES[selectedCountry] || { code: "USD", symbol: "$", rate: 1.0 };
+  let usdAmount = rawSalary;
+  let localAmount = rawSalary;
 
-  // Helper to format currency in local style
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat(isFrench ? "fr-FR" : "en-US", {
+  if (rawSalary > 1000000) {
+    localAmount = rawSalary;
+    usdAmount = Math.round(rawSalary / (localInfo.rate || 1));
+  } else {
+    usdAmount = rawSalary;
+    localAmount = Math.round(rawSalary * (localInfo.rate || 1));
+  }
+
+  const isUSD = mode === "USD" || localInfo.code === "USD";
+  const displayVal = isUSD ? usdAmount : localAmount;
+  const displayCode = isUSD ? "USD" : localInfo.code;
+  const displaySymbol = isUSD ? "$" : localInfo.symbol;
+
+  let formatted = "";
+  if (isUSD) {
+    formatted = `$${displayVal.toLocaleString(isFrench ? "fr-FR" : "en-US")} USD`;
+  } else {
+    formatted = new Intl.NumberFormat(isFrench ? "fr-FR" : "en-US", {
       style: "currency",
-      currency: info.code,
+      currency: displayCode,
       maximumFractionDigits: 0,
-    }).format(val);
+    }).format(displayVal);
+  }
+
+  return {
+    value: displayVal,
+    code: displayCode,
+    symbol: displaySymbol,
+    formatted,
+    localInfo,
+  };
+}
+
+export function SalarySimulator({
+  timeline,
+  trackTitle,
+  selectedLanguage,
+  selectedCountry,
+  currencyMode,
+  onCurrencyChange,
+}: SalarySimulatorProps) {
+  const [internalMode, setInternalMode] = useState<"USD" | "LOCAL">("USD");
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  const isFrench = selectedLanguage === "french";
+  const activeMode = currencyMode ?? internalMode;
+
+  const handleModeToggle = (newMode: "USD" | "LOCAL") => {
+    if (onCurrencyChange) {
+      onCurrencyChange(newMode);
+    } else {
+      setInternalMode(newMode);
+    }
   };
 
   const activeMilestone = timeline[activeIndex] || timeline[0];
 
-  // Map data for Recharts chart using the converted salary
-  const chartData = timeline.map((m, idx) => ({
-    name: isFrench ? `An ${m.year}` : `Yr ${m.year}`,
-    Salary: m.salary * info.rate,
-    Role: m.role,
-    isActive: idx === activeIndex,
-  }));
+  const activeRes = getSalaryValueAndFormatted(
+    activeMilestone?.salary || 0,
+    selectedCountry,
+    activeMode,
+    isFrench
+  );
 
-  const activeSalaryConverted = (activeMilestone?.salary || 0) * info.rate;
+  const localInfo = activeRes.localInfo;
+  const displayCode = activeRes.code;
+  const displaySymbol = activeRes.symbol;
+
+  // Chart data
+  const chartData = timeline.map((m, idx) => {
+    const res = getSalaryValueAndFormatted(m.salary, selectedCountry, activeMode, isFrench);
+    return {
+      name: isFrench ? `An ${m.year}` : `Yr ${m.year}`,
+      Salary: res.value,
+      FormattedSalary: res.formatted,
+      Role: m.role,
+      isActive: idx === activeIndex,
+    };
+  });
 
   return (
     <div className="glass-card p-6 flex flex-col justify-between h-full">
       <div>
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div>
             <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 bg-indigo-400/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
               {isFrench ? "Simulateur de Progression" : "Progression Simulator"}
@@ -65,6 +132,36 @@ export function SalarySimulator({ timeline, trackTitle, selectedLanguage, select
                 : `Select seniority milestones to simulate compensation growth for ${trackTitle}.`}
             </p>
           </div>
+
+          {/* CURRENCY TOGGLE */}
+          <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner shrink-0">
+            <button
+              type="button"
+              onClick={() => handleModeToggle("USD")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeMode === "USD"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              <span>USD ($)</span>
+            </button>
+            {localInfo.code !== "USD" && (
+              <button
+                type="button"
+                onClick={() => handleModeToggle("LOCAL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeMode === "LOCAL"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5 text-indigo-300" />
+                <span>{localInfo.code} ({localInfo.symbol})</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Dynamic Highlight Card */}
@@ -76,7 +173,7 @@ export function SalarySimulator({ timeline, trackTitle, selectedLanguage, select
             <div>
               <p className="text-xs text-slate-400">{isFrench ? "Salaire de Base Target" : "Target Base Salary"}</p>
               <h4 className="text-2xl font-black font-display text-gradient tracking-tight">
-                {formatCurrency(activeSalaryConverted)}
+                {activeRes.formatted}
               </h4>
             </div>
           </div>
@@ -157,10 +254,11 @@ export function SalarySimulator({ timeline, trackTitle, selectedLanguage, select
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) => {
-                if (info.code === "XAF" || info.code === "XOF") {
-                  return `${(v / 1000000).toFixed(0)}M`;
+                if (displayCode === "XAF" || displayCode === "XOF" || displayCode === "CDF") {
+                  if (v >= 1000000) return `${(v / 1000000).toFixed(0)}M`;
+                  return `${(v / 1000).toFixed(0)}k`;
                 }
-                return `${info.symbol}${(v / 1000).toFixed(0)}k`;
+                return `${displaySymbol}${(v / 1000).toFixed(0)}k`;
               }}
             />
             <Tooltip
@@ -171,7 +269,7 @@ export function SalarySimulator({ timeline, trackTitle, selectedLanguage, select
                     <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl text-left max-w-[200px]">
                       <p className="text-xs font-bold text-indigo-400">{data.name}</p>
                       <p className="text-sm font-semibold text-white mt-1">
-                        {formatCurrency(payload[0].value as number)}
+                        {data.FormattedSalary}
                       </p>
                       <p className="text-[10px] text-slate-400 mt-0.5 truncate">{data.Role}</p>
                     </div>
