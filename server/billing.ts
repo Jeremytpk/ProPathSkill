@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { randomBytes } from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb, getAccess, requireAccount, requireAdminKey, rateLimit } from "./auth";
+import { adminDb, getAccess, isAdminEmail, requireAccount, requireAdmin, rateLimit } from "./auth";
 import { chapterAccess } from "./tutors";
 import { chapterEntitlement, fullEntitlement, TUTOR_SHARE, type TutorCourse } from "../src/marketplace/types";
 
@@ -54,8 +54,14 @@ const cinetpayConfigured = () => Boolean(process.env.CINETPAY_API_KEY && process
 /** Simulated payments for local development, never in production. */
 const testMode = () => !cinetpayConfigured() && process.env.NODE_ENV !== "production";
 
+/** Website address, where people come back after paying. */
 function appUrl(req: Request) {
   return (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+}
+
+/** Server address, where CinetPay sends payment notifications. */
+export function serverUrl(req: Request) {
+  return (process.env.SERVER_URL || process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
 }
 
 /** CinetPay rejects special characters in parameter values. */
@@ -304,7 +310,7 @@ billingRouter.post("/api/pay/checkout", requireAccount, rateLimit("checkout", 20
       amount: payment.amount,
       currency: payment.currency,
       description: payment.description,
-      notifyUrl: `${base}/api/pay/notify`,
+      notifyUrl: `${serverUrl(req)}/api/pay/notify`,
       returnUrl,
       email: user.email,
     });
@@ -361,12 +367,18 @@ billingRouter.post("/api/pay/test/:id", requireAccount, async (req, res) => {
 
 // Admin ---------------------------------------------------------------------
 
-billingRouter.get("/api/admin/pricing", requireAdminKey, async (_req, res) => {
+/** Lets the app show admin tools only to admins. */
+billingRouter.get("/api/admin/me", async (req, res) => {
+  const user = req.user;
+  res.json({ admin: Boolean(user && !user.anonymous && isAdminEmail(user.email)) });
+});
+
+billingRouter.get("/api/admin/pricing", requireAdmin, async (_req, res) => {
   pricingCache = null;
   res.json({ countries: await getPricingTable(), defaults: DEFAULT_PRICING });
 });
 
-billingRouter.post("/api/admin/pricing", requireAdminKey, async (req, res) => {
+billingRouter.post("/api/admin/pricing", requireAdmin, async (req, res) => {
   if (!adminDb) return res.status(503).json({ error: "billing_not_configured" });
   const code = String(req.body?.country || "").toUpperCase();
   const p = req.body?.pricing || {};
@@ -385,14 +397,14 @@ billingRouter.post("/api/admin/pricing", requireAdminKey, async (req, res) => {
   res.json({ ok: true });
 });
 
-billingRouter.get("/api/admin/payments", requireAdminKey, async (_req, res) => {
+billingRouter.get("/api/admin/payments", requireAdmin, async (_req, res) => {
   if (!adminDb) return res.status(503).json({ error: "billing_not_configured" });
   const snap = await adminDb.collection("payments").orderBy("createdAt", "desc").limit(100).get();
   res.json({ payments: snap.docs.map((d) => ({ id: d.id, ...d.data() })) });
 });
 
 /** Manual grant, e.g. for partners, scholarships or support cases. */
-billingRouter.post("/api/admin/subscription", requireAdminKey, async (req, res) => {
+billingRouter.post("/api/admin/subscription", requireAdmin, async (req, res) => {
   if (!adminDb) return res.status(503).json({ error: "billing_not_configured" });
   const email = String(req.body?.email || "").trim().toLowerCase();
   const plan = req.body?.plan as Plan | "free";

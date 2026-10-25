@@ -15,11 +15,9 @@ import { Modal, Spinner } from "./components/ui";
 // Loaded on demand to keep the first load light on mobile data.
 const CoursesPage = lazy(() => import("./components/CoursesPage").then((m) => ({ default: m.CoursesPage })));
 const ProjectManager = lazy(() => import("./components/ProjectManager").then((m) => ({ default: m.ProjectManager })));
-const AdminPortal = lazy(() => import("./components/AdminPortal").then((m) => ({ default: m.AdminPortal })));
-const BillingAdmin = lazy(() => import("./components/BillingAdmin").then((m) => ({ default: m.BillingAdmin })));
+const AdminPage = lazy(() => import("./components/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const PlansPage = lazy(() => import("./components/Plans").then((m) => ({ default: m.PlansPage })));
 const TeachPage = lazy(() => import("./components/TeachPage").then((m) => ({ default: m.TeachPage })));
-const MarketplaceAdmin = lazy(() => import("./components/MarketplaceAdmin").then((m) => ({ default: m.MarketplaceAdmin })));
 const GoalsPage = lazy(() => import("./components/GoalsPage").then((m) => ({ default: m.GoalsPage })));
 const PaymentReturn = lazy(() => import("./components/Plans").then((m) => ({ default: m.PaymentReturn })));
 
@@ -75,7 +73,16 @@ export default function App() {
     const open = new URLSearchParams(window.location.search).get("open") || "";
     return open.startsWith("tc:") ? open.slice(3) : null;
   });
-  const [view, setView] = useState<View>(() => (reopenCourse ? "courses" : "path"));
+  const [view, setView] = useState<View>(() => (reopenCourse ? "courses" : window.location.hash === "#admin" ? "admin" : "path"));
+  // Only admins see the Admin link.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    authedFetch("/api/admin/me").then((r) => r.json()).then((d) => setIsAdmin(Boolean(d.admin))).catch(() => setIsAdmin(false));
+  }, [user?.uid]);
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -260,11 +267,7 @@ export default function App() {
       <main id="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Suspense fallback={<div className="flex justify-center py-20"><Spinner className="w-8 h-8" /></div>}>
         {view === "admin" ? (
-          <>
-            <BillingAdmin />
-            <MarketplaceAdmin />
-            <AdminPortal onBack={() => go("path")} theme={theme} />
-          </>
+          <AdminPage onExit={() => go("path")} />
         ) : view === "courses" ? (
           <CoursesPage language={language} initialTutorCourse={reopenCourse} />
         ) : view === "teach" ? (
@@ -328,7 +331,7 @@ export default function App() {
               </button>
             )}
             <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => go("teach")}>{fr ? "Enseigner sur ProPath" : "Teach on ProPath"}</button>
-            <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => go("admin")}>Admin</button>
+            {isAdmin && <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => go("admin")}>Admin</button>}
           </span>
         </div>
       </footer>

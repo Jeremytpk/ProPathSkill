@@ -350,7 +350,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
   return (
     <div className="space-y-6">
       {/* Admin Title Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-5 print:hidden">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-ink-700 pb-5 print:hidden">
         <div>
           <button 
             onClick={onBack}
@@ -361,11 +361,11 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           </button>
           <div className="flex items-center gap-2">
             <Building className="w-6 h-6 text-indigo-500" />
-            <h1 className="text-2xl font-black font-display text-white mt-0.5">
+            <h1 className="text-2xl font-black font-display text-chalk mt-0.5">
               Vocational Partners & Placements Console
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-mist mt-1">
             Configure partner directories, schedule training curricula, and manage student placement pipeline requests in real-time.
           </p>
         </div>
@@ -373,7 +373,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
         {/* Sync Controls */}
         <button
           onClick={loadAllData}
-          className="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold font-sans cursor-pointer transition flex items-center gap-2"
+          className="bg-ink-800 hover:bg-ink-800 border border-ink-700 text-body px-4 py-2 rounded-xl text-xs font-semibold font-sans cursor-pointer transition flex items-center gap-2"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" />
           Synchronize Registry
@@ -387,8 +387,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
             <Building className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active Hiring Partners</p>
-            <p className="text-xl font-black text-white mt-1">{partners.length}</p>
+            <p className="text-[10px] text-dim font-bold uppercase tracking-wider">Active Hiring Partners</p>
+            <p className="text-xl font-black text-chalk mt-1">{partners.length}</p>
           </div>
         </div>
 
@@ -397,8 +397,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Educational Programs</p>
-            <p className="text-xl font-black text-white mt-1">{programs.length}</p>
+            <p className="text-[10px] text-dim font-bold uppercase tracking-wider">Educational Programs</p>
+            <p className="text-xl font-black text-chalk mt-1">{programs.length}</p>
           </div>
         </div>
 
@@ -407,8 +407,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Placement Placements</p>
-            <p className="text-xl font-black text-white mt-1">
+            <p className="text-[10px] text-dim font-bold uppercase tracking-wider">Placement Placements</p>
+            <p className="text-xl font-black text-chalk mt-1">
               {applications.length} total ({applications.filter(a => a.status === "Pending").length} pending)
             </p>
           </div>
@@ -416,13 +416,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-800 gap-1 overflow-x-auto pb-px">
+      <div className="flex border-b border-ink-700 gap-1 overflow-x-auto pb-px">
         <button
           onClick={() => { setActiveTab("partners"); setSearchQuery(""); }}
           className={`px-4 py-2.5 text-xs font-bold font-mono transition-all border-b-2 cursor-pointer ${
             activeTab === "partners"
-              ? "border-indigo-500 text-white font-black"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-indigo-500 text-chalk font-black"
+              : "border-transparent text-mist hover:text-body"
           }`}
         >
           Hiring Partners ({partners.length})
@@ -431,8 +431,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           onClick={() => { setActiveTab("programs"); setSearchQuery(""); }}
           className={`px-4 py-2.5 text-xs font-bold font-mono transition-all border-b-2 cursor-pointer ${
             activeTab === "programs"
-              ? "border-indigo-500 text-white font-black"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-indigo-500 text-chalk font-black"
+              : "border-transparent text-mist hover:text-body"
           }`}
         >
           Curated Programs ({programs.length})
@@ -441,8 +441,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           onClick={() => { setActiveTab("applications"); setSearchQuery(""); }}
           className={`px-4 py-2.5 text-xs font-bold font-mono transition-all border-b-2 cursor-pointer ${
             activeTab === "applications"
-              ? "border-indigo-500 text-white font-black"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-indigo-500 text-chalk font-black"
+              : "border-transparent text-mist hover:text-body"
           }`}
         >
           Team Placement Pipeline ({applications.length})
@@ -451,8 +451,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           onClick={() => { setActiveTab("monetization"); setSearchQuery(""); }}
           className={`px-4 py-2.5 text-xs font-bold font-mono transition-all border-b-2 cursor-pointer ${
             activeTab === "monetization"
-              ? "border-indigo-500 text-white font-black"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-indigo-500 text-chalk font-black"
+              : "border-transparent text-mist hover:text-body"
           }`}
         >
           Choice Tracking Analytics ({clicks.length})
@@ -460,9 +460,9 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3.5 rounded-2xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-ink-900/40 p-3.5 rounded-2xl border border-ink-700">
         <div className="relative w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-dim absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder={
@@ -471,18 +471,18 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+            className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-ink-850 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
           {activeTab === "applications" && (
             <div className="flex items-center gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-slate-500" />
+              <Filter className="w-3.5 h-3.5 text-dim" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-xs bg-slate-900 border border-slate-800 text-slate-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
+                className="text-xs bg-ink-850 border border-ink-700 text-body rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
               >
                 <option value="all">All States</option>
                 <option value="pending">Pending</option>
@@ -525,8 +525,8 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
       {/* Main Content Render */}
       {loading ? (
         <div className="py-12 text-center flex flex-col items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-slate-800 border-t-indigo-500 animate-spin mb-3" />
-          <p className="text-xs text-slate-400 font-mono">Loading data pipeline from cloud storage...</p>
+          <div className="w-8 h-8 rounded-full border-2 border-ink-700 border-t-indigo-500 animate-spin mb-3" />
+          <p className="text-xs text-mist font-mono">Loading data pipeline from cloud storage...</p>
         </div>
       ) : (
         <div>
@@ -534,7 +534,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           {activeTab === "partners" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredPartners.length === 0 ? (
-                <div className="col-span-2 text-center py-8 text-slate-500 text-xs">
+                <div className="col-span-2 text-center py-8 text-dim text-xs">
                   No partners found matching search criteria.
                 </div>
               ) : (
@@ -546,19 +546,19 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                           <span className="text-[9px] font-mono font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded">
                             {p.industry}
                           </span>
-                          <h3 className="text-base font-bold text-white mt-2">{p.name}</h3>
+                          <h3 className="text-base font-bold text-chalk mt-2">{p.name}</h3>
                         </div>
                         <div className="flex gap-1.5">
                           <button
                             onClick={() => handleOpenPartnerForm(p)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-400 bg-slate-900 hover:bg-slate-850 rounded border border-slate-800 cursor-pointer transition"
+                            className="p-1.5 text-mist hover:text-indigo-400 bg-ink-850 hover:bg-ink-800 rounded border border-ink-700 cursor-pointer transition"
                             title="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeletePartner(p.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 bg-slate-900 hover:bg-slate-850 rounded border border-slate-800 cursor-pointer transition"
+                            className="p-1.5 text-mist hover:text-red-400 bg-ink-850 hover:bg-ink-800 rounded border border-ink-700 cursor-pointer transition"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -566,14 +566,14 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-300 mt-3 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-body mt-3 leading-relaxed line-clamp-3">
                         {p.description}
                       </p>
                     </div>
 
-                    <div className="mt-5 border-t border-slate-800/60 pt-4 flex items-center justify-between text-xs text-slate-400 font-mono">
+                    <div className="mt-5 border-t border-ink-700/60 pt-4 flex items-center justify-between text-xs text-mist font-mono">
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                        <MapPin className="w-3.5 h-3.5 text-dim" />
                         <span>{p.location} ({p.country || "United States"})</span>
                       </div>
                       {p.website && p.website.trim() !== "" && !p.name.toLowerCase().includes("propath") ? (
@@ -602,7 +602,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           {activeTab === "programs" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredPrograms.length === 0 ? (
-                <div className="col-span-2 text-center py-8 text-slate-500 text-xs">
+                <div className="col-span-2 text-center py-8 text-dim text-xs">
                   No educational programs found matching criteria.
                 </div>
               ) : (
@@ -612,26 +612,26 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[9px] font-mono font-semibold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                            <span className="text-[9px] font-mono font-semibold text-mist bg-ink-850 px-1.5 py-0.5 rounded border border-ink-700">
                               {pr.partnerName}
                             </span>
                             <span className="text-[9px] font-mono font-bold text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 px-1.5 py-0.5 rounded">
                               {pr.level}
                             </span>
                           </div>
-                          <h3 className="text-base font-bold text-white mt-2.5">{pr.title}</h3>
+                          <h3 className="text-base font-bold text-chalk mt-2.5">{pr.title}</h3>
                         </div>
                         <div className="flex gap-1.5">
                           <button
                             onClick={() => handleOpenProgramForm(pr)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-400 bg-slate-900 hover:bg-slate-850 rounded border border-slate-800 cursor-pointer transition"
+                            className="p-1.5 text-mist hover:text-indigo-400 bg-ink-850 hover:bg-ink-800 rounded border border-ink-700 cursor-pointer transition"
                             title="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteProgram(pr.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 bg-slate-900 hover:bg-slate-850 rounded border border-slate-800 cursor-pointer transition"
+                            className="p-1.5 text-mist hover:text-red-400 bg-ink-850 hover:bg-ink-800 rounded border border-ink-700 cursor-pointer transition"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -639,27 +639,27 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-300 mt-3 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-body mt-3 leading-relaxed line-clamp-3">
                         {pr.description}
                       </p>
 
-                      <div className="mt-4 bg-slate-900/60 p-2.5 rounded-xl border border-slate-850 text-[11px] text-slate-400 leading-none flex flex-wrap gap-x-4 gap-y-2 font-mono">
+                      <div className="mt-4 bg-ink-850/60 p-2.5 rounded-xl border border-ink-700 text-[11px] text-mist leading-none flex flex-wrap gap-x-4 gap-y-2 font-mono">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-500" />
-                          <span>Duration: <strong className="text-slate-300 font-sans">{pr.duration}</strong></span>
+                          <Clock className="w-3 h-3 text-dim" />
+                          <span>Duration: <strong className="text-body font-sans">{pr.duration}</strong></span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3 text-slate-500" />
-                          <span>Cost: <strong className="text-slate-300 font-sans">{pr.cost}</strong></span>
+                          <DollarSign className="w-3 h-3 text-dim" />
+                          <span>Cost: <strong className="text-body font-sans">{pr.cost}</strong></span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-slate-500" />
-                          <span>Country: <strong className="text-slate-300 font-sans">{pr.country || "United States"}</strong></span>
+                          <MapPin className="w-3 h-3 text-dim" />
+                          <span>Country: <strong className="text-body font-sans">{pr.country || "United States"}</strong></span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-5 border-t border-slate-800/60 pt-4 flex flex-col sm:flex-row gap-2 sm:items-center justify-between text-xs text-slate-400">
+                    <div className="mt-5 border-t border-ink-700/60 pt-4 flex flex-col sm:flex-row gap-2 sm:items-center justify-between text-xs text-mist">
                       <div className="flex items-center gap-1 font-mono text-[10px] text-indigo-400 font-semibold bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
                         <Briefcase className="w-3 h-3 shrink-0" />
                         <span className="line-clamp-1">Track: {pr.trackId || "General"}</span>
@@ -680,7 +680,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-slate-500 italic">No external link required</span>
+                        <span className="text-dim italic">No external link required</span>
                       )}
                     </div>
                   </div>
@@ -693,7 +693,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           {activeTab === "applications" && (
             <div className="space-y-4">
               {filteredApplications.length === 0 ? (
-                <div className="text-center py-12 text-slate-500 text-xs">
+                <div className="text-center py-12 text-dim text-xs">
                   No placement applications match current filter.
                 </div>
               ) : (
@@ -710,12 +710,12 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-bold text-white">{app.userName}</h3>
-                            <span className="text-xs text-slate-400">({app.userEmail})</span>
+                            <h3 className="text-base font-bold text-chalk">{app.userName}</h3>
+                            <span className="text-xs text-mist">({app.userEmail})</span>
                           </div>
                           
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                            <span>Target Partner: <strong className="text-slate-200">{app.partnerName}</strong></span>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-mist mt-1">
+                            <span>Target Partner: <strong className="text-body">{app.partnerName}</strong></span>
                             <span>•</span>
                             <span>Matched Pathway: <strong className="text-indigo-400">{app.trackTitle}</strong></span>
                           </div>
@@ -727,13 +727,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                             app.status === "Approved" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" :
                             app.status === "Joined" ? "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" :
                             app.status === "Reviewing" ? "text-amber-400 bg-amber-500/10 border-amber-500/20" :
-                            "text-slate-400 bg-slate-500/10 border-slate-500/10"
+                            "text-mist bg-slate-500/10 border-slate-500/10"
                           }`}>
                             {app.status}
                           </span>
                           <button
                             onClick={() => handleDeleteApp(app.id)}
-                            className="p-1 text-slate-500 hover:text-red-400 transition cursor-pointer"
+                            className="p-1 text-dim hover:text-red-400 transition cursor-pointer"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -742,16 +742,16 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       </div>
 
                       {/* Application details */}
-                      <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-850 text-xs space-y-2">
-                        <p className="text-slate-300 font-sans leading-relaxed">
-                          <span className="text-slate-500 font-mono font-semibold block text-[10px] uppercase tracking-wider mb-1">User Cover Statement</span>
+                      <div className="bg-ink-850/60 p-4 rounded-xl border border-ink-700 text-xs space-y-2">
+                        <p className="text-body font-sans leading-relaxed">
+                          <span className="text-dim font-mono font-semibold block text-[10px] uppercase tracking-wider mb-1">User Cover Statement</span>
                           {app.notes || "No user statement provided."}
                         </p>
                         
                         {app.adminNotes && (
-                          <div className="border-t border-slate-800/60 pt-2.5 mt-2.5">
-                            <span className="text-slate-500 font-mono font-semibold block text-[10px] uppercase tracking-wider mb-1 text-indigo-400">Admin Response Notes</span>
-                            <p className="text-slate-300 font-sans italic">
+                          <div className="border-t border-ink-700/60 pt-2.5 mt-2.5">
+                            <span className="text-dim font-mono font-semibold block text-[10px] uppercase tracking-wider mb-1 text-indigo-400">Admin Response Notes</span>
+                            <p className="text-body font-sans italic">
                               "{app.adminNotes}"
                             </p>
                           </div>
@@ -760,9 +760,9 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     </div>
 
                     {/* Admin Actions Panel */}
-                    <div className="w-full md:w-72 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-800/80 pt-4 md:pt-0 md:pl-5">
+                    <div className="w-full md:w-72 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l border-ink-700/80 pt-4 md:pt-0 md:pl-5">
                       <div className="space-y-2">
-                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider font-mono">
+                        <label className="text-[10px] text-dim font-bold uppercase tracking-wider font-mono">
                           Reviewer Response Note
                         </label>
                         <textarea
@@ -770,14 +770,14 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                           placeholder="e.g. Schedule call, details sent..."
                           value={adminNoteInput[app.id] || app.adminNotes || ""}
                           onChange={(e) => setAdminNoteInput({ ...adminNoteInput, [app.id]: e.target.value })}
-                          className="w-full p-2 text-xs bg-slate-900 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                          className="w-full p-2 text-xs bg-ink-850 border border-ink-700 text-body rounded-lg focus:outline-none focus:border-indigo-500"
                         />
                       </div>
 
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <button
                           onClick={() => handleUpdateAppStatus(app.id, "Reviewing")}
-                          className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 text-[11px] font-bold rounded-lg cursor-pointer transition border border-slate-800 flex items-center justify-center gap-1"
+                          className="px-2 py-1.5 bg-ink-850 hover:bg-ink-800 text-amber-400 hover:text-amber-300 text-[11px] font-bold rounded-lg cursor-pointer transition border border-ink-700 flex items-center justify-center gap-1"
                         >
                           <span>Review</span>
                         </button>
@@ -916,42 +916,42 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   <>
                     {/* BENTO GRID: BUSINESS SUMMARY */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
+                      <div className="bg-ink-850/60 border border-ink-700 p-5 rounded-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 rounded-full blur-xl pointer-events-none" />
                         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-400">Total Leads Monitored</span>
-                        <h4 className="text-3xl font-black text-white mt-1.5 font-mono">{totalClicks}</h4>
-                        <p className="text-[10px] text-slate-400 mt-1">Syllabus & application click-throughs.</p>
+                        <h4 className="text-3xl font-black text-chalk mt-1.5 font-mono">{totalClicks}</h4>
+                        <p className="text-[10px] text-mist mt-1">Syllabus & application click-throughs.</p>
                       </div>
 
-                      <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
+                      <div className="bg-ink-850/60 border border-ink-700 p-5 rounded-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
                         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">Partner Leads Value</span>
                         <h4 className="text-3xl font-black text-emerald-400 mt-1.5 font-mono">
                           ${calculatedSponsorshipValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h4>
-                        <p className="text-[10px] text-slate-400 mt-1">Generated value based on conversion weight.</p>
+                        <p className="text-[10px] text-mist mt-1">Generated value based on conversion weight.</p>
                       </div>
 
-                      <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
+                      <div className="bg-ink-850/60 border border-ink-700 p-5 rounded-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rounded-full blur-xl pointer-events-none" />
                         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400">Avg Lead Cost</span>
-                        <h4 className="text-3xl font-black text-white mt-1.5 font-mono">
+                        <h4 className="text-3xl font-black text-chalk mt-1.5 font-mono">
                           ${totalClicks > 0 ? (calculatedSponsorshipValue / totalClicks).toFixed(2) : "0.00"}
                         </h4>
-                        <p className="text-[10px] text-slate-400 mt-1">Weighted value per user action.</p>
+                        <p className="text-[10px] text-mist mt-1">Weighted value per user action.</p>
                       </div>
 
-                      <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+                      <div className="bg-ink-850/60 border border-ink-700 p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between">
                         <div>
                           <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-fuchsia-400">Lead Export Utility</span>
-                          <p className="text-[10px] text-slate-300 mt-1">Download choice matrices to monetize with partners.</p>
+                          <p className="text-[10px] text-body mt-1">Download choice matrices to monetize with partners.</p>
                         </div>
                         <button
                           onClick={handleExportCSV}
                           disabled={clicks.length === 0}
                           className={`mt-3 w-full font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
                             clicks.length === 0
-                              ? (theme === "light" ? "bg-slate-200" : "bg-slate-800")
+                              ? (theme === "light" ? "bg-slate-200" : "bg-ink-800")
                               : "bg-indigo-600 hover:bg-indigo-500"
                           }`}
                           style={{
@@ -970,24 +970,24 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       
                       {/* Top Partners Share */}
-                      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5">
-                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <div className="bg-ink-850/40 border border-ink-700/80 rounded-2xl p-5">
+                        <h4 className="text-xs font-bold text-body uppercase tracking-wider mb-4 flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                           <span>Sponsor Share (Clicks per Institution)</span>
                         </h4>
                         <div className="space-y-3.5">
                           {sortedPartners.length === 0 ? (
-                            <p className="text-[11px] text-slate-500 italic py-6 text-center">No partner clicks captured.</p>
+                            <p className="text-[11px] text-dim italic py-6 text-center">No partner clicks captured.</p>
                           ) : (
                             sortedPartners.slice(0, 5).map(({ name, count }) => {
                               const pct = Math.round((count / totalClicks) * 100);
                               return (
                                 <div key={name}>
-                                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
+                                  <div className="flex items-center justify-between text-xs font-semibold text-body mb-1">
                                     <span className="truncate max-w-[200px]" title={name}>{name}</span>
-                                    <span className="font-mono text-[10px] text-slate-400">{count} clicks ({pct}%)</span>
+                                    <span className="font-mono text-[10px] text-mist">{count} clicks ({pct}%)</span>
                                   </div>
-                                  <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-850">
+                                  <div className="w-full bg-ink-900 h-2 rounded-full overflow-hidden border border-ink-700">
                                     <div 
                                       className="h-full bg-indigo-500 rounded-full"
                                       style={{ width: `${pct}%` }}
@@ -1001,24 +1001,24 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       </div>
 
                       {/* Top Cohorts/Programs requested */}
-                      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5">
-                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <div className="bg-ink-850/40 border border-ink-700/80 rounded-2xl p-5">
+                        <h4 className="text-xs font-bold text-body uppercase tracking-wider mb-4 flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500" />
                           <span>Curated Program Demands</span>
                         </h4>
                         <div className="space-y-3.5">
                           {sortedTargets.length === 0 ? (
-                            <p className="text-[11px] text-slate-500 italic py-6 text-center">No program clicks captured.</p>
+                            <p className="text-[11px] text-dim italic py-6 text-center">No program clicks captured.</p>
                           ) : (
                             sortedTargets.slice(0, 5).map(({ name, count }) => {
                               const pct = Math.round((count / totalClicks) * 100);
                               return (
                                 <div key={name}>
-                                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
+                                  <div className="flex items-center justify-between text-xs font-semibold text-body mb-1">
                                     <span className="truncate max-w-[200px]" title={name}>{name}</span>
-                                    <span className="font-mono text-[10px] text-slate-400">{count} clicks ({pct}%)</span>
+                                    <span className="font-mono text-[10px] text-mist">{count} clicks ({pct}%)</span>
                                   </div>
-                                  <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-850">
+                                  <div className="w-full bg-ink-900 h-2 rounded-full overflow-hidden border border-ink-700">
                                     <div 
                                       className="h-full bg-fuchsia-500 rounded-full"
                                       style={{ width: `${pct}%` }}
@@ -1032,24 +1032,24 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       </div>
 
                       {/* Regional Traffic distribution */}
-                      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5">
-                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <div className="bg-ink-850/40 border border-ink-700/80 rounded-2xl p-5">
+                        <h4 className="text-xs font-bold text-body uppercase tracking-wider mb-4 flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           <span>Geographic Distribution (Local Sponsors)</span>
                         </h4>
                         <div className="space-y-3.5">
                           {sortedCountries.length === 0 ? (
-                            <p className="text-[11px] text-slate-500 italic py-6 text-center">No geographical clicks recorded.</p>
+                            <p className="text-[11px] text-dim italic py-6 text-center">No geographical clicks recorded.</p>
                           ) : (
                             sortedCountries.slice(0, 5).map(({ name, count }) => {
                               const pct = Math.round((count / totalClicks) * 100);
                               return (
                                 <div key={name}>
-                                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
+                                  <div className="flex items-center justify-between text-xs font-semibold text-body mb-1">
                                     <span className="capitalize">{name === "fr" ? "France (fr)" : name === "cm" || name === "cd" ? "DRCongo (cd)" : name === "Cameroon" ? "DRCongo" : name}</span>
-                                    <span className="font-mono text-[10px] text-slate-400">{count} clicks ({pct}%)</span>
+                                    <span className="font-mono text-[10px] text-mist">{count} clicks ({pct}%)</span>
                                   </div>
-                                  <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-850">
+                                  <div className="w-full bg-ink-900 h-2 rounded-full overflow-hidden border border-ink-700">
                                     <div 
                                       className="h-full bg-emerald-500 rounded-full"
                                       style={{ width: `${pct}%` }}
@@ -1065,10 +1065,10 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     </div>
 
                     {/* ATTRIBUTION DATA LIST OF INDIVIDUAL USER CHOICES */}
-                    <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-5">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Raw Choice-Attribution Stream</h4>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 border border-slate-850 rounded">
+                    <div className="bg-ink-850/30 border border-ink-700 rounded-2xl p-5">
+                      <div className="flex items-center justify-between border-b border-ink-700 pb-3 mb-4">
+                        <h4 className="text-xs font-bold text-body uppercase tracking-wider">Raw Choice-Attribution Stream</h4>
+                        <span className="text-[10px] font-mono text-mist bg-ink-900 px-2 py-0.5 border border-ink-700 rounded">
                           Showing {searchedClicks.length} of {totalClicks}
                         </span>
                       </div>
@@ -1076,7 +1076,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-800 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                            <tr className="border-b border-ink-700 text-[10px] uppercase font-bold text-dim tracking-wider">
                               <th className="py-2.5 px-3">Timestamp</th>
                               <th className="py-2.5 px-3">Candidate Email</th>
                               <th className="py-2.5 px-3">Interaction Type</th>
@@ -1086,14 +1086,14 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                               <th className="py-2.5 px-3">Country / Lang</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-850/50 text-[11px] font-mono">
+                          <tbody className="divide-y divide-ink-700/50 text-[11px] font-mono">
                             {searchedClicks.length === 0 ? (
                               <tr>
-                                <td colSpan={7} className="py-8 text-center text-slate-500 italic">No attribution records match filters.</td>
+                                <td colSpan={7} className="py-8 text-center text-dim italic">No attribution records match filters.</td>
                               </tr>
                             ) : (
                               searchedClicks.map(c => {
-                                let badgeColor = "text-slate-400 bg-slate-500/10 border-slate-500/10";
+                                let badgeColor = "text-mist bg-slate-500/10 border-slate-500/10";
                                 let actionLabel = "Explore Sandbox";
                                 if (c.type === "program_join_click") {
                                   badgeColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
@@ -1107,46 +1107,46 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                                 }
 
                                 return (
-                                  <tr key={c.id} className="hover:bg-slate-950/40 text-slate-300">
-                                    <td className="py-3 px-3 whitespace-nowrap text-slate-400 text-[10px]">
+                                  <tr key={c.id} className="hover:bg-ink-900/40 text-body">
+                                    <td className="py-3 px-3 whitespace-nowrap text-mist text-[10px]">
                                       {c.createdAt ? new Date(c.createdAt).toLocaleString() : "Recent"}
                                     </td>
-                                    <td className="py-3 px-3 text-slate-200">{c.userEmail || "anonymous"}</td>
+                                    <td className="py-3 px-3 text-body">{c.userEmail || "anonymous"}</td>
                                     <td className="py-3 px-3">
                                       <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${badgeColor}`}>
                                         {actionLabel}
                                       </span>
                                     </td>
-                                    <td className="py-3 px-3 font-sans font-bold text-slate-100">
+                                    <td className="py-3 px-3 font-sans font-bold text-chalk">
                                       {c.targetName}
-                                      <span className="block font-mono font-normal text-[9px] text-slate-500 mt-0.5">
+                                      <span className="block font-mono font-normal text-[9px] text-dim mt-0.5">
                                         Provider: {c.partnerName || "General Learning"}
                                       </span>
                                     </td>
-                                    <td className="py-3 px-3 font-sans text-slate-300">
+                                    <td className="py-3 px-3 font-sans text-body">
                                       <div>{c.trackTitle || "General"}</div>
                                       {c.secondSuggestedTrack && (
-                                        <div className="text-[10px] text-slate-500 mt-0.5">
+                                        <div className="text-[10px] text-dim mt-0.5">
                                           2nd: {c.secondSuggestedTrack} {c.secondSuggestedSector ? `(${c.secondSuggestedSector})` : ""}
                                         </div>
                                       )}
                                     </td>
-                                    <td className="py-3 px-3 text-slate-300">
+                                    <td className="py-3 px-3 text-body">
                                       {c.industrySelections && c.industrySelections.length > 0 ? (
                                         <div className="flex flex-wrap gap-1 max-w-[220px]">
                                           {c.industrySelections.map((ind: string) => (
-                                            <span key={ind} className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[9px] border border-slate-700">
+                                            <span key={ind} className="bg-ink-800 text-body px-1.5 py-0.5 rounded text-[9px] border border-ink-600">
                                               {ind}
                                             </span>
                                           ))}
                                         </div>
                                       ) : (
-                                        <span className="text-slate-500 italic">None</span>
+                                        <span className="text-dim italic">None</span>
                                       )}
                                     </td>
-                                    <td className="py-3 px-3 uppercase text-slate-400">
+                                    <td className="py-3 px-3 uppercase text-mist">
                                       <div>{c.country || "Global"}</div>
-                                      <div className="text-[10px] text-slate-500 capitalize">{c.language || "English"}</div>
+                                      <div className="text-[10px] text-dim capitalize">{c.language || "English"}</div>
                                     </td>
                                   </tr>
                                 );
@@ -1168,22 +1168,22 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
          MODAL FORM: PARTNER
          --------------------------------------------------------- */}
       {showPartnerForm && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 w-full max-w-lg p-6 md:p-8 relative">
+        <div className="fixed inset-0 bg-ink-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-ink-850 rounded-3xl border border-ink-700 w-full max-w-lg p-6 md:p-8 relative">
             <button
               onClick={() => setShowPartnerForm(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"
+              className="absolute top-4 right-4 text-mist hover:text-chalk cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-black font-display text-white mb-6">
+            <h3 className="text-lg font-black font-display text-chalk mb-6">
               {editingPartner ? "Edit Hiring Partner Profile" : "Register New Hiring Partner"}
             </h3>
 
             <form onSubmit={handleSavePartner} className="space-y-4">
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                   Partner Company Name *
                 </label>
                 <input
@@ -1191,19 +1191,19 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   required
                   value={partnerName}
                   onChange={(e) => setPartnerName(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Industry Category
                   </label>
                   <select
                     value={partnerIndustry}
                     onChange={(e) => setPartnerIndustry(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     <option value="Blockchain & Web3">Blockchain & Web3</option>
                     <option value="Cloud & AI Engineering">Cloud & AI Engineering</option>
@@ -1216,25 +1216,25 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     HQ Location
                   </label>
                   <input
                     type="text"
                     value={partnerLoc}
                     onChange={(e) => setPartnerLoc(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Country of Operations
                   </label>
                   <select
                     value={partnerCountry}
                     onChange={(e) => setPartnerCountry(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
@@ -1249,7 +1249,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
 
               {partnerIndustry === "Other" && (
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Custom Industry Category *
                   </label>
                   <input
@@ -1258,13 +1258,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     placeholder="e.g. Healthtech, Cyber Security..."
                     value={customIndustry}
                     onChange={(e) => setCustomIndustry(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               )}
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                   Website URL {partnerName.toLowerCase().includes("propath") && (
                     <span className="text-emerald-400 font-black text-[9px] ml-1 px-1 py-0.5 bg-emerald-500/10 rounded uppercase">Optional for ProPathSkill</span>
                   )}
@@ -1274,12 +1274,12 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   placeholder={partnerName.toLowerCase().includes("propath") ? "Hosted inside ProPath (Optional - Leave blank)" : "e.g. partner.com or https://partner.com"}
                   value={partnerWeb}
                   onChange={(e) => setPartnerWeb(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                   Partner Overview & Description *
                 </label>
                 <textarea
@@ -1287,7 +1287,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   required
                   value={partnerDesc}
                   onChange={(e) => setPartnerDesc(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1295,7 +1295,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 <button
                   type="button"
                   onClick={() => setShowPartnerForm(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer transition"
+                  className="flex-1 py-2.5 rounded-xl border border-ink-700 hover:bg-ink-800 text-body text-xs font-semibold cursor-pointer transition"
                 >
                   Cancel
                 </button>
@@ -1315,29 +1315,29 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
          MODAL FORM: PROGRAM
          --------------------------------------------------------- */}
       {showProgramForm && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 w-full max-w-lg p-6 md:p-8 relative">
+        <div className="fixed inset-0 bg-ink-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-ink-850 rounded-3xl border border-ink-700 w-full max-w-lg p-6 md:p-8 relative">
             <button
               onClick={() => setShowProgramForm(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"
+              className="absolute top-4 right-4 text-mist hover:text-chalk cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-black font-display text-white mb-6">
+            <h3 className="text-lg font-black font-display text-chalk mb-6">
               {editingProgram ? "Modify Curated Training Program" : "Launch Curated Partner Training Program"}
             </h3>
 
             <form onSubmit={handleSaveProgram} className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Hosting Partner *
                   </label>
                   <select
                     value={programPartnerId}
                     onChange={(e) => setProgramPartnerId(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     {partners.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
@@ -1346,13 +1346,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 </div>
 
                 <div className="col-span-1">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Country *
                   </label>
                   <select
                     value={programCountry}
                     onChange={(e) => setProgramCountry(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
@@ -1364,13 +1364,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 </div>
 
                 <div className="col-span-1">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Target Track *
                   </label>
                   <select
                     value={programTrackId}
                     onChange={(e) => setProgramTrackId(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     <option value="">General Program</option>
                     <option value="DeFi Security Engineer & Smart Contract Auditor">DeFi Security Engineer & Smart Contract Auditor</option>
@@ -1381,7 +1381,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                   Program Title *
                 </label>
                 <input
@@ -1390,13 +1390,13 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   placeholder="e.g. Smart Contract Security Bootcamp"
                   value={programTitle}
                   onChange={(e) => setProgramTitle(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Duration
                   </label>
                   <input
@@ -1404,12 +1404,12 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     placeholder="e.g. 12 Weeks"
                     value={programDuration}
                     onChange={(e) => setProgramDuration(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Cost Option
                   </label>
                   <input
@@ -1417,18 +1417,18 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     placeholder="e.g. Free"
                     value={programCost}
                     onChange={(e) => setProgramCost(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                  <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                     Difficulty Level
                   </label>
                   <select
                     value={programLevel}
                     onChange={(e) => setProgramLevel(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -1442,7 +1442,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 const isProPath = !!(selectedPart && selectedPart.name.toLowerCase().includes("propath"));
                 return (
                   <div>
-                    <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                    <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                       Application Link / Hub URL {isProPath && (
                         <span className="text-emerald-400 font-black text-[9px] ml-1 px-1 py-0.5 bg-emerald-500/10 rounded uppercase">Optional (AI Course Native)</span>
                       )}
@@ -1452,14 +1452,14 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                       placeholder={isProPath ? "Auto-generated ProPathSkill route (Optional - Leave blank)" : "e.g. partner.com/apply or https://partner.com/apply"}
                       value={programLink}
                       onChange={(e) => setProgramLink(e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                      className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 );
               })()}
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">
+                <label className="text-[10px] font-mono text-mist uppercase tracking-widest block mb-1.5">
                   Curriculum Overview & Requirements *
                 </label>
                 <textarea
@@ -1468,7 +1468,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   placeholder="Provide core modules, outcomes, and alignment criteria..."
                   value={programDesc}
                   onChange={(e) => setProgramDesc(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full text-xs p-2.5 rounded-xl bg-ink-900 border border-ink-700 text-body focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1480,7 +1480,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                 );
                 if (!isSelProPathSkill) return null;
                 return (
-                  <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-slate-300 text-[11px] leading-relaxed flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-body text-[11px] leading-relaxed flex items-start gap-2.5">
                     <span className="text-sm">🤖</span>
                     <div>
                       <span className="text-indigo-400 font-bold block mb-0.5">ProPathSkill AI-Taught Partner</span>
@@ -1495,7 +1495,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                   type="button"
                   disabled={isGeneratingAICourse}
                   onClick={() => setShowProgramForm(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-2.5 rounded-xl border border-ink-700 hover:bg-ink-800 text-body text-xs font-semibold cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "../lib/api";
 import { useSystemTheme } from "../lib/theme";
 import { ArrowRight, BookOpen, Megaphone, Palette } from "lucide-react";
 import type { Bilingual, Lang } from "../career/assessment";
@@ -37,7 +38,7 @@ export function CoursesPage({ language, initialTutorCourse }: { language: Lang; 
   const [tutorCourse, setTutorCourse] = useState<string | null>(initialTutorCourse || null);
   const [market, setMarket] = useState<TutorCourse[] | null>(null);
   useEffect(() => {
-    fetch(`/api/market/courses?language=${language}`).then((r) => r.json()).then((d) => setMarket(d.courses || [])).catch(() => setMarket([]));
+    fetch(apiUrl(`/api/market/courses?language=${language}`)).then((r) => r.json()).then((d) => setMarket(d.courses || [])).catch(() => setMarket([]));
   }, [language]);
   const openCourse = (id: string) => guard(() => setOpen(id));
   const openHub = (h: "marketing" | "design") => guard(() => setHub(h));

@@ -108,11 +108,19 @@ export function requirePlan(minimum: "basic" | "pro") {
   };
 }
 
-export function requireAdminKey(req: Request, res: Response, next: NextFunction) {
+/** Admin accounts: emails listed in PROPATH_ADMIN_EMAILS (comma-separated). */
+export function isAdminEmail(email?: string) {
+  const admins = (process.env.PROPATH_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return Boolean(email && admins.includes(email.toLowerCase()));
+}
+
+/** Admins sign in with an admin account, or (as a backup) send the PROPATH_ADMIN_KEY header. */
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const expected = process.env.PROPATH_ADMIN_KEY;
-  if (!expected) return res.status(503).json({ error: "PROPATH_ADMIN_KEY is not set on the server." });
-  if (req.headers["x-admin-key"] !== expected) return res.status(401).json({ error: "Invalid admin key." });
-  next();
+  if (expected && req.headers["x-admin-key"] === expected) return next();
+  const user = req.user ?? (await getRequestUser(req));
+  if (user && !user.anonymous && isAdminEmail(user.email)) return next();
+  return res.status(401).json({ error: "admin_required" });
 }
 
 const buckets = new Map<string, { count: number; resetAt: number }>();

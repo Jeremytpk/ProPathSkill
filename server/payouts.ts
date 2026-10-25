@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { randomBytes } from "crypto";
-import { adminDb, requireAdminKey } from "./auth";
+import { adminDb, requireAdmin } from "./auth";
+import { serverUrl } from "./billing";
 import type { TutorProfile } from "../src/marketplace/types";
 
 /**
@@ -81,7 +82,7 @@ async function balances() {
   return byTutor;
 }
 
-payoutsRouter.get("/api/admin/payouts", requireAdminKey, async (_req, res) => {
+payoutsRouter.get("/api/admin/payouts", requireAdmin, async (_req, res) => {
   try {
     const bal = await balances();
     const tutors = await Promise.all([...bal.keys()].map((id) => db().collection("tutors").doc(id).get()));
@@ -104,7 +105,7 @@ payoutsRouter.get("/api/admin/payouts", requireAdminKey, async (_req, res) => {
   }
 });
 
-payoutsRouter.post("/api/admin/payouts", requireAdminKey, async (req, res) => {
+payoutsRouter.post("/api/admin/payouts", requireAdmin, async (req, res) => {
   const tutorId = String(req.body?.tutorId || "");
   const mode = req.body?.mode === "cinetpay" ? "cinetpay" : "manual";
   const reference = String(req.body?.reference || "").slice(0, 120);
@@ -151,8 +152,7 @@ payoutsRouter.post("/api/admin/payouts", requireAdminKey, async (req, res) => {
       ...base, status: "processing", transferAmount: amount, transferCurrency: conv.currency, carryOverUsd: carryUsd,
     });
     try {
-      const appUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
-      await sendTransfer(tutor, amount, payoutId, `${appUrl}/api/payouts/notify`);
+      await sendTransfer(tutor, amount, payoutId, `${serverUrl(req)}/api/payouts/notify`);
       if (carryUsd > 0) {
         await db().collection("tutor_earnings").doc(`${payoutId}_carry`).set({
           tutorId, kind: "carry_over", gross: 0, currency: "USD", tutorShare: carryUsd, platformShare: 0,
@@ -179,7 +179,7 @@ async function releaseEarnings(payoutId: string) {
 }
 
 /** Admin override for a processing transfer, e.g. after checking the CinetPay back office. */
-payoutsRouter.post("/api/admin/payouts/:id/status", requireAdminKey, async (req, res) => {
+payoutsRouter.post("/api/admin/payouts/:id/status", requireAdmin, async (req, res) => {
   const status = req.body?.status;
   if (!["paid", "failed"].includes(status)) return res.status(400).json({ error: "invalid_status" });
   try {

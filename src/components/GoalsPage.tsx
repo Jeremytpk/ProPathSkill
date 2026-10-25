@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
+import { apiUrl } from "../lib/api";
 import { useSystemTheme } from "../lib/theme";
 import { ArrowLeft, ArrowRight, BookOpen, Briefcase, Check, CheckCircle2, ExternalLink, Plus, Target, Trash2 } from "lucide-react";
 import { Lang, tr } from "../career/assessment";
@@ -200,7 +201,7 @@ function PlanView({ plan, language, onBuildProject, onDeleted }: { plan: Learnin
   const [tutorCourse, setTutorCourse] = useState<string | null>(null);
   const [market, setMarket] = useState<TutorCourse[]>([]);
   useEffect(() => {
-    fetch(`/api/market/courses?language=${language}`).then((r) => r.json()).then((d) => setMarket(d.courses || [])).catch(() => setMarket([]));
+    fetch(apiUrl(`/api/market/courses?language=${language}`)).then((r) => r.json()).then((d) => setMarket(d.courses || [])).catch(() => setMarket([]));
   }, [language]);
   const [preparing, setPreparing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

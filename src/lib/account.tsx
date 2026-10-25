@@ -8,6 +8,7 @@ import {
   doc, setDoc, getDoc, onSnapshot, collection, deleteDoc, query, orderBy,
 } from "firebase/firestore";
 import { db, firebaseApp } from "./firebase";
+import { apiUrl } from "./api";
 import type { CareerReport } from "../types";
 import type { Project } from "../projects/types";
 import type { LearningPlan } from "../career/learningPlan";
@@ -283,7 +284,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     if (!headers.has("Content-Type") && init.body) headers.set("Content-Type", "application/json");
     const token = await auth?.currentUser?.getIdToken().catch(() => null);
     if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
+    return fetch(apiUrl(input), { ...init, headers });
   }, []);
 
   const checkout = useCallback(async (request: CheckoutRequest) => {

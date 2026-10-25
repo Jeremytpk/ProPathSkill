@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "../lib/api";
 import { Check, CheckCircle2, XCircle } from "lucide-react";
 import type { Lang } from "../career/assessment";
 import { useAccount, type CheckoutRequest } from "../lib/account";
@@ -28,7 +29,7 @@ export function formatPrice(amount: number, currency: string, lang: Lang) {
 export function usePricing(countryCode: string) {
   const [data, setData] = useState<{ pricing: Pricing; months: number[]; testMode: boolean } | null>(null);
   useEffect(() => {
-    fetch(`/api/pricing?country=${encodeURIComponent(countryCode)}`)
+    fetch(apiUrl(`/api/pricing?country=${encodeURIComponent(countryCode)}`))
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData({ pricing: { currency: "USD", basic: 2, pro: 5, exam: 2 }, months: [1, 3, 6, 12], testMode: false }));

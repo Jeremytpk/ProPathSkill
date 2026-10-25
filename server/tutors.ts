@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { randomBytes } from "crypto";
 import { z } from "zod";
-import { adminDb, getRequestUser, requireAccount, requireAdminKey } from "./auth";
+import { adminDb, getRequestUser, requireAccount, requireAdmin } from "./auth";
 import { SKILL_IDS } from "../src/career/skills";
 import {
   chapterEntitlement, fullEntitlement, MAX_PRICE, MIN_CHAPTERS, MIN_FREE_CHAPTERS, MIN_PRICE,
@@ -262,13 +262,13 @@ tutorsRouter.get("/api/market/courses/:id/chapters/:index", handle(async (req, r
 
 // Admin: tutor and course review --------------------------------------------
 
-tutorsRouter.get("/api/admin/tutors", requireAdminKey, handle(async (req, res) => {
+tutorsRouter.get("/api/admin/tutors", requireAdmin, handle(async (req, res) => {
   const status = String(req.query.status || "pending");
   const snap = await db().collection("tutors").where("status", "==", status).limit(200).get();
   res.json({ tutors: snap.docs.map((d) => d.data()) });
 }));
 
-tutorsRouter.post("/api/admin/tutors/:uid", requireAdminKey, handle(async (req, res) => {
+tutorsRouter.post("/api/admin/tutors/:uid", requireAdmin, handle(async (req, res) => {
   const status = req.body?.status;
   if (!["approved", "rejected", "suspended", "pending"].includes(status)) return res.status(400).json({ error: "invalid_status" });
   const ref = db().collection("tutors").doc(String(req.params.uid));
@@ -289,13 +289,13 @@ tutorsRouter.post("/api/admin/tutors/:uid", requireAdminKey, handle(async (req, 
   res.json({ ok: true });
 }));
 
-tutorsRouter.get("/api/admin/tutor-courses", requireAdminKey, handle(async (req, res) => {
+tutorsRouter.get("/api/admin/tutor-courses", requireAdmin, handle(async (req, res) => {
   const status = String(req.query.status || "pending_review");
   const snap = await db().collection("tutor_courses").where("status", "==", status).limit(200).get();
   res.json({ courses: snap.docs.map((d) => d.data()) });
 }));
 
-tutorsRouter.get("/api/admin/tutor-courses/:id", requireAdminKey, handle(async (req, res) => {
+tutorsRouter.get("/api/admin/tutor-courses/:id", requireAdmin, handle(async (req, res) => {
   const ref = db().collection("tutor_courses").doc(String(req.params.id));
   const snap = await ref.get();
   if (!snap.exists) return res.status(404).json({ error: "not_found" });
@@ -303,7 +303,7 @@ tutorsRouter.get("/api/admin/tutor-courses/:id", requireAdminKey, handle(async (
   res.json({ course: snap.data(), content: content.docs.sort((a, b) => Number(a.id) - Number(b.id)).map((d) => d.data()) });
 }));
 
-tutorsRouter.post("/api/admin/tutor-courses/:id", requireAdminKey, handle(async (req, res) => {
+tutorsRouter.post("/api/admin/tutor-courses/:id", requireAdmin, handle(async (req, res) => {
   const status = req.body?.status;
   if (!["approved", "rejected"].includes(status)) return res.status(400).json({ error: "invalid_status" });
   const ref = db().collection("tutor_courses").doc(String(req.params.id));
