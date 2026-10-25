@@ -1,5 +1,5 @@
 import React from "react";
-import logoImg from "../../assets/ProPathLogo.png";
+import logoImg from "../../assets/ProPathLogo-web.jpg";
 
 
 

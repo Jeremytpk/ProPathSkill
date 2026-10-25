@@ -6,6 +6,53 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Active plan from the subscription record, which only the server writes after payment.
+    function hasPlan(uid, plans) {
+      let sub = get(/databases/$(database)/documents/users/$(uid)).data.get('subscription', {});
+      return sub.get('expiresAtMs', 0) > request.time.toMillis() && sub.get('plan', 'free') in plans;
+    }
+
+    // User accounts (email or Google sign-in).
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && !request.resource.data.keys().hasAny(['subscription']);
+      allow update: if isOwner(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription']);
+      allow delete: if false;
+
+      // Progress is kept in the cloud only with a paid plan; free users keep it on their device.
+      match /data/{docId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) && hasPlan(uid, ['basic', 'pro']);
+      }
+      // Project Manager is part of Pro.
+      match /projects/{projectId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) && hasPlan(uid, ['pro']);
+      }
+      // Purchases (e.g. course exams), granted by the server after payment.
+      match /entitlements/{entitlementId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+
+    // Payments are created and updated by the server only.
+    match /payments/{paymentId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Public configuration (prices), managed through the admin API.
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // 2. Reports: Immutable sharing dossiers
     match /reports/{reportId} {
       allow read, create: if true;

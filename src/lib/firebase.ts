@@ -14,7 +14,7 @@ const firebaseConfig = {
   appId: "1:723937303605:web:22521aea7a8753fe48657c"
 };
 
-let app;
+let app: ReturnType<typeof initializeApp> | null = null;
 let db: any = null;
 
 try {
@@ -26,7 +26,7 @@ try {
   console.error("Failed to initialize Firebase client:", error);
 }
 
-export { db };
+export { db, app as firebaseApp };
 
 // -------------------------------------------------------------------------
 // FIRESTORE ERROR HANDLING (MANDATED BY FIREBASE SKILL)
@@ -451,7 +451,7 @@ async function seedInitialData() {
         partnerId: "partner_gcloud",
         partnerName: "Google Cloud Pathways",
         title: "Cloud DevOps & AI Operations Pathway",
-        description: "Intensive training program focused on automated deployment, stress testing distributed servers, Kubernetes management, and scaling Gemini API pipelines.",
+        description: "Intensive training program focused on automated deployment, stress testing distributed servers, Kubernetes management, and scaling AI API pipelines.",
         duration: "8 Weeks",
         cost: "Free (Sponsored)",
         level: "Intermediate",

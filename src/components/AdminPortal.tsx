@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAccount } from "../lib/account";
 import { 
   getPartners, savePartner, deletePartner,
   getPrograms, saveProgram, deleteProgram,
@@ -36,6 +37,7 @@ interface AdminPortalProps {
 }
 
 export function AdminPortal({ onBack, theme }: AdminPortalProps) {
+  const { authedFetch } = useAccount();
   const [activeTab, setActiveTab] = useState<"partners" | "programs" | "applications" | "monetization">("partners");
   
   // Data States
@@ -229,7 +231,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
           const hasFrenchWords = /cours|formation|développement|numérique|gestion|stratégie/i.test(programTitle + " " + programDesc);
           const lang = hasFrenchWords ? "french" : "english";
 
-          const response = await fetch("/api/generate-course-content", {
+          const response = await authedFetch("/api/generate-course-content", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -1482,7 +1484,7 @@ export function AdminPortal({ onBack, theme }: AdminPortalProps) {
                     <span className="text-sm">🤖</span>
                     <div>
                       <span className="text-indigo-400 font-bold block mb-0.5">ProPathSkill AI-Taught Partner</span>
-                      Saving this program will invoke Gemini AI to generate a personalized 3-chapter curriculum, generating local interactive lessons and quizzes for students.
+                      Saving this program will use ProPath AI to generate a personalized 3-chapter curriculum, generating local interactive lessons and quizzes for students.
                     </div>
                   </div>
                 );

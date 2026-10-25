@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAccount } from "../lib/account";
 import { 
   Palette, Sparkles, ArrowLeft, ArrowRight, Loader2, BookOpen, 
   Target, Zap, Flame, Award, Lightbulb, Play, Layers, CheckCircle2,
@@ -22,6 +23,7 @@ const PRESET_TOPICS = [
 ];
 
 export function CreativeDesignCourseHub({ onBack, language = "english", theme = "dark" }: CreativeDesignCourseHubProps) {
+  const { authedFetch } = useAccount();
   const isFrench = language.toLowerCase() === "french";
   const isDark = theme === "dark";
 
@@ -32,7 +34,7 @@ export function CreativeDesignCourseHub({ onBack, language = "english", theme = 
   // Selected course to view in workspace
   const [activeCourse, setActiveCourse] = useState<{ id: string; data?: any } | null>(null);
 
-  // Function to request Gemini AI course generation
+  // Request a course from ProPath AI
   const handleGenerateCourse = async (topicToUse?: string) => {
     const title = topicToUse || customTopic.trim();
     if (!title) return;
@@ -41,7 +43,7 @@ export function CreativeDesignCourseHub({ onBack, language = "english", theme = 
     setGenerateError(null);
 
     try {
-      const response = await fetch("/api/generate-course-content", {
+      const response = await authedFetch("/api/generate-course-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,13 +54,13 @@ export function CreativeDesignCourseHub({ onBack, language = "english", theme = 
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate course with Gemini AI");
+        throw new Error("Course generation failed");
       }
 
       const data = await response.json();
       if (data && data.title && data.chapters) {
         const fullCourse = {
-          id: `gemini_cd_${Date.now()}`,
+          id: `gen_cd_${Date.now()}`,
           ...data
         };
         setActiveCourse({ id: fullCourse.id, data: fullCourse });
@@ -66,10 +68,10 @@ export function CreativeDesignCourseHub({ onBack, language = "english", theme = 
         throw new Error("Invalid course payload returned");
       }
     } catch (err: any) {
-      console.warn("Gemini generation fallback engaged:", err);
+      console.warn("Course generation unavailable, using built-in course:", err);
       // Fallback: create a structured creative design course directly
       const fallbackCourse = {
-        id: `gemini_cd_${Date.now()}`,
+        id: `gen_cd_${Date.now()}`,
         title: title.startsWith("Design") || title.startsWith("UI/UX") ? title : `Creative Digital Design: ${title}`,
         industry: "Creative Digital Design & Spatial UI",
         aiTutorPersona: isFrench ? "Alexandre Mercier (Directeur Artistique & Designer Spatial UI)" : "Alexandre Mercier (Creative Director & Spatial UI Designer)",
@@ -154,7 +156,7 @@ export function CreativeDesignCourseHub({ onBack, language = "english", theme = 
     }
   };
 
-  // Pre-built Gemini Creative Design courses
+  // Pre-built Creative Design courses
   const featuredCourses = [
     {
       id: "creativedesign_native",

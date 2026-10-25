@@ -1,907 +1,475 @@
-import React, { useState, useEffect } from "react";
-import { AssessmentQuiz } from "./components/AssessmentQuiz";
-import { Dashboard } from "./components/Dashboard";
-import { ReportHeader } from "./components/ReportHeader";
-import { ConfirmationModal } from "./components/ConfirmationModal";
-import { AdminPortal } from "./components/AdminPortal";
-import { DigitalMarketingCourseHub } from "./components/DigitalMarketingCourseHub";
-import { CreativeDesignCourseHub } from "./components/CreativeDesignCourseHub";
-import { CareerReport, MentorGoal } from "./types";
-import { getReport } from "./lib/firebase";
-import { 
-  Sparkles, Compass, AlertCircle, RefreshCw, 
-  ChevronRight, BookOpen, UserCheck, Shield, Sun, Moon, ArrowRight, Megaphone, Palette,
-  Menu, X
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
+import { useSystemTheme } from "./lib/theme";
+import { ArrowRight, Cloud, CloudOff, Menu, User, X } from "lucide-react";
+import { AssessmentAnswers, Lang } from "./career/assessment";
+import { buildBaseTrack, computeProfile, pickMatches, rankOccupations } from "./career/engine";
+import type { CareerReport, CareerTrack, MentorGoal } from "./types";
+import { useAccount } from "./lib/account";
+import { COUNTRIES } from "./lib/country";
 import { ProPathLogo } from "./components/ProPathLogo";
-import { getFallbackRoadmap } from "./fallbackClient";
+import { CareerAssessment, clearAssessmentDraft } from "./components/CareerAssessment";
+import { CareerDashboard } from "./components/CareerDashboard";
+import { AccountForm } from "./components/AccountForm";
+import { Modal, Spinner } from "./components/ui";
 
-const SUPPORTED_COUNTRIES = [
-  { code: "US", name: "United States", flag: "🇺🇸", currency: "USD" },
-  { code: "FR", name: "France", flag: "🇫🇷", currency: "EUR" },
-  { code: "CA", name: "Canada", flag: "🇨🇦", currency: "CAD" },
-  { code: "CD", name: "DRCongo", flag: "🇨🇩", currency: "CDF" },
-  { code: "SN", name: "Senegal", flag: "🇸🇳", currency: "FCFA" },
-  { code: "CI", name: "Ivory Coast", flag: "🇨🇮", currency: "FCFA" }
-];
+// Loaded on demand to keep the first load light on mobile data.
+const CoursesPage = lazy(() => import("./components/CoursesPage").then((m) => ({ default: m.CoursesPage })));
+const ProjectManager = lazy(() => import("./components/ProjectManager").then((m) => ({ default: m.ProjectManager })));
+const AdminPortal = lazy(() => import("./components/AdminPortal").then((m) => ({ default: m.AdminPortal })));
+const BillingAdmin = lazy(() => import("./components/BillingAdmin").then((m) => ({ default: m.BillingAdmin })));
+const PlansPage = lazy(() => import("./components/Plans").then((m) => ({ default: m.PlansPage })));
+const TeachPage = lazy(() => import("./components/TeachPage").then((m) => ({ default: m.TeachPage })));
+const MarketplaceAdmin = lazy(() => import("./components/MarketplaceAdmin").then((m) => ({ default: m.MarketplaceAdmin })));
+const GoalsPage = lazy(() => import("./components/GoalsPage").then((m) => ({ default: m.GoalsPage })));
+const PaymentReturn = lazy(() => import("./components/Plans").then((m) => ({ default: m.PaymentReturn })));
+
+
+type View = "path" | "goals" | "courses" | "projects" | "plans" | "teach" | "admin";
+
+function readPref<T extends string>(key: string, fallback: T): T {
+  try {
+    return (localStorage.getItem(key) as T) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writePref(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
+}
+
+function initialGoals(fr: boolean): MentorGoal[] {
+  return [
+    {
+      id: "goal_1",
+      text: fr ? "Parler à deux personnes qui exercent le métier visé." : "Talk to two people who already do the work you're aiming for.",
+      completed: false,
+      category: "Industry Network",
+    },
+    {
+      id: "goal_2",
+      text: fr ? "Commencer le cours ProPath de votre meilleure piste." : "Start the ProPath course for your top match.",
+      completed: false,
+      category: "Technical",
+    },
+    {
+      id: "goal_3",
+      text: fr ? "Trouver un mentor ou un maître d'apprentissage près de chez vous." : "Find a mentor or master craftsperson near you.",
+      completed: false,
+      category: "Mentorship",
+    },
+  ];
+}
 
 export default function App() {
-  const [report, setReport] = useState<CareerReport | null>(null);
-  const [loadingShared, setLoadingShared] = useState(false);
-  const [sharedError, setSharedError] = useState<string | null>(null);
-  const [submittingAssessment, setSubmittingAssessment] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isAdminView, setIsAdminView] = useState(false);
-  const [showDigitalMarketingHub, setShowDigitalMarketingHub] = useState(false);
-  const [showCreativeDesignHub, setShowCreativeDesignHub] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Localization and Regional States
-  const [selectedCountry, setSelectedCountry] = useState<string>(() => {
-    return localStorage.getItem("propath_country") || "";
+  const theme = useSystemTheme();
+  const { progress, updateProgress, authedFetch, isGuest, user, cloudSync, signOut, access } = useAccount();
+  const [language, setLanguage] = useState<Lang>(() => readPref<Lang>("propath_language", "french"));
+  const [country, setCountry] = useState<string>(() => readPref("propath_country", ""));
+  // After paying for a tutor course, the payment page sends the learner back to it.
+  const [reopenCourse] = useState<string | null>(() => {
+    const open = new URLSearchParams(window.location.search).get("open") || "";
+    return open.startsWith("tc:") ? open.slice(3) : null;
   });
-
-  const [selectedLanguage, setSelectedLanguage] = useState<"english" | "french">(() => {
-    return (localStorage.getItem("propath_language") as "english" | "french") || "english";
-  });
-
-  const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
-
-  const updateCountry = (country: string) => {
-    setSelectedCountry(country);
-    localStorage.setItem("propath_country", country);
-  };
-
-  const updateLanguage = (lang: "english" | "french") => {
-    setSelectedLanguage(lang);
-    localStorage.setItem("propath_language", lang);
-  };
-
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    const saved = localStorage.getItem("propath_theme");
-    return (saved === "dark" || saved === "light") ? saved : "dark";
-  });
-
-  // Sync theme to root element classes
-  useEffect(() => {
-    document.documentElement.className = theme;
-    localStorage.setItem("propath_theme", theme);
-  }, [theme]);
-
-  // Check URL params for a shared report ID on load
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const reportId = params.get("reportId");
-
-    if (reportId) {
-      setLoadingShared(true);
-      getReport(reportId)
-        .then((sharedData) => {
-          if (sharedData) {
-            setReport({
-              id: reportId,
-              ...sharedData
-            });
-            console.log("Shared report retrieved successfully:", reportId);
-          } else {
-            setSharedError("The requested Career Alignment Report could not be located in our cloud registry. It may have expired or been deleted.");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          setSharedError("A network synchronization issue occurred while downloading the report. Please try reloading.");
-        })
-        .finally(() => {
-          setLoadingShared(false);
-        });
-    } else {
-      // Load active local report if available
-      const localReport = localStorage.getItem("propath_active_report");
-      if (localReport) {
-        try {
-          setReport(JSON.parse(localReport));
-        } catch (e) {
-          console.error("Failed to parse local career report:", e);
-        }
-      }
-    }
-  }, []);
-
-  // Handle Quiz Submission
-  const handleQuizSubmit = async (data: { answers: Record<string, string>; selectedSectors: string[] }) => {
-    setSubmittingAssessment(true);
+  const [view, setView] = useState<View>(() => (reopenCourse ? "courses" : "path"));
+  const [submitting, setSubmitting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [retakeConfirm, setRetakeConfirm] = useState(false);
+  // People who already started the assessment go straight back to it.
+  const [startMode, setStartMode] = useState<"choose" | "assessment">(() => {
     try {
-      const response = await fetch("/api/generate-roadmap", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          country: selectedCountry || "United States",
-          language: selectedLanguage || "english"
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate career alignment report.");
-      }
-
-      const responseData = await response.json();
-      
-      // Setup initial mentor goals
-      const initialGoals: MentorGoal[] = [
-        {
-          id: "goal_1",
-          text: selectedLanguage === "french"
-            ? "Passer en revue les compétences et les plans d'action avec un mentor de carrière."
-            : "Review matched competency levels and delta trajectories with a career mentor.",
-          completed: false,
-          category: "Mentorship",
-        },
-        {
-          id: "goal_2",
-          text: selectedLanguage === "french"
-            ? "S'inscrire au programme de formation gratuit prioritaire suggéré."
-            : "Register for the top-priority curated free educational program.",
-          completed: false,
-          category: "Technical",
-        },
-        {
-          id: "goal_3",
-          text: selectedLanguage === "french"
-            ? "Évaluer vos compétences techniques sur des projets de code open source ou GitHub."
-            : "Benchmark high-level skills on open GitHub repositories or code projects.",
-          completed: false,
-          category: "Leadership",
-        }
-      ];
-
-      const newReport: CareerReport = {
-        id: `local_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        answers: data,
-        recommendedTracks: responseData.recommendedTracks,
-        mentorGoals: initialGoals,
-        note: responseData.note,
-      };
-
-      setReport(newReport);
-      localStorage.setItem("propath_active_report", JSON.stringify(newReport));
-    } catch (err) {
-      console.error("Error submitting quiz:", err);
-      setSubmitError(selectedLanguage === "french"
-        ? "Le moteur intelligent d'intelligence artificielle a rencontré une forte latence. ProPath a chargé l'algorithme d'orientation local pour garantir un résultat immédiat."
-        : "The AI service is experiencing high demand. ProPath has dynamically loaded our high-fidelity offline backup engine to ensure seamless, zero-delay results.");
-
-      // Setup offline initial mentor goals
-      const initialGoals: MentorGoal[] = [
-        {
-          id: "goal_1",
-          text: selectedLanguage === "french"
-            ? "Passer en revue les compétences et les plans d'action avec un mentor de carrière."
-            : "Review matched competency levels and delta trajectories with a career mentor.",
-          completed: false,
-          category: "Mentorship",
-        },
-        {
-          id: "goal_2",
-          text: selectedLanguage === "french"
-            ? "S'inscrire au programme de formation gratuit prioritaire suggéré."
-            : "Register for the top-priority curated free educational program.",
-          completed: false,
-          category: "Technical",
-        },
-        {
-          id: "goal_3",
-          text: selectedLanguage === "french"
-            ? "Évaluer vos compétences techniques sur des projets de code open source ou GitHub."
-            : "Benchmark high-level skills on open GitHub repositories or code projects.",
-          completed: false,
-          category: "Leadership",
-        }
-      ];
-
-      try {
-        const fallbackTracks = getFallbackRoadmap(
-          data.selectedSectors,
-          data.answers,
-          selectedCountry || "United States",
-          selectedLanguage || "english"
-        );
-
-        const fallbackReport: CareerReport = {
-          id: `local_${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          answers: data,
-          recommendedTracks: fallbackTracks,
-          mentorGoals: initialGoals,
-          note: selectedLanguage === "french"
-            ? "Généré via le moteur de secours ProPath en raison de la latence de l'API."
-            : "Loaded via ProPath intelligent backup engine due to transient API latency."
-        };
-
-        setReport(fallbackReport);
-        localStorage.setItem("propath_active_report", JSON.stringify(fallbackReport));
-      } catch (fallbackErr) {
-        console.error("Failed to generate offline fallback:", fallbackErr);
-      }
-    } finally {
-      setSubmittingAssessment(false);
+      return localStorage.getItem("propath_assessment_draft") ? "assessment" : "choose";
+    } catch {
+      return "choose";
     }
-  };
+  });
+  const [projectIdea, setProjectIdea] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(() => new URLSearchParams(window.location.search).get("payment"));
+  const fr = language === "french";
 
-  // Update Mentor Goals
-  const handleUpdateGoals = (updatedGoals: MentorGoal[]) => {
-    if (!report) return;
-    const updatedReport = {
-      ...report,
-      mentorGoals: updatedGoals,
-    };
-    setReport(updatedReport);
-    
-    // Only save locally if it's our own active report
-    if (report.id.startsWith("local_")) {
-      localStorage.setItem("propath_active_report", JSON.stringify(updatedReport));
-    }
-  };
+  useEffect(() => {
+    document.documentElement.lang = fr ? "fr" : "en";
+  }, [fr]);
 
-  // Restart / Reset
-  const handleRestart = () => {
-    setIsConfirmOpen(true);
+  const updateLanguage = (l: Lang) => {
+    setLanguage(l);
+    writePref("propath_language", l);
   };
+  const updateCountry = (c: string) => {
+    setCountry(c);
+    writePref("propath_country", c);
+  };
+  const countryLabel = COUNTRIES.find((c) => c.name === country)?.label[fr ? "fr" : "en"] || country;
+  const countryCode = COUNTRIES.find((c) => c.name === country)?.code || "CD";
 
-  const handleLogoClick = () => {
-    setShowDigitalMarketingHub(false);
-    setShowCreativeDesignHub(false);
-    setIsAdminView(false);
-    setReport(null);
-    setHasOnboarded(false);
-    localStorage.removeItem("propath_active_report");
-    // Clean up URL parameters if any
+  const closePayment = () => {
+    setPaymentId(null);
     const url = new URL(window.location.href);
-    url.searchParams.delete("reportId");
-    window.history.pushState({}, "", url.toString());
+    url.searchParams.delete("payment");
+    url.searchParams.delete("open");
+    window.history.replaceState({}, "", url.toString());
   };
 
-  const confirmReset = () => {
-    handleLogoClick();
+  const handleSubmit = async (answers: AssessmentAnswers) => {
+    setSubmitting(true);
+    let tracks: CareerTrack[];
+    let summary: string | undefined;
+    let profile = computeProfile(answers);
+    let note: string | undefined;
+    try {
+      const res = await authedFetch("/api/career/report", {
+        method: "POST",
+        body: JSON.stringify({ answers, language, country: countryLabel || "DR Congo" }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      tracks = data.tracks;
+      summary = data.summary;
+      profile = data.profile;
+      if (!data.enriched) note = "offline";
+    } catch {
+      // Matching runs locally too; only the personalised roadmap needs the server.
+      tracks = pickMatches(rankOccupations(answers, profile)).map((m) => buildBaseTrack(m, profile, language));
+      note = "offline";
+    }
+
+    const report: CareerReport = {
+      id: `local_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      answers,
+      profile,
+      summary,
+      recommendedTracks: tracks,
+      mentorGoals: initialGoals(fr),
+      country: countryLabel,
+      language,
+      note,
+    };
+    updateProgress((p) => ({
+      ...p,
+      report,
+      activeTrackId: tracks[0]?.id,
+      events: { ...p.events, assessmentCompletedAt: report.createdAt },
+    }));
+    clearAssessmentDraft();
+    if (note === "offline") {
+      setNotice(fr
+        ? "Vos résultats sont prêts. La feuille de route détaillée pour votre pays n'a pas pu être générée ; vous pourrez refaire l'évaluation plus tard pour l'obtenir."
+        : "Your results are ready. The detailed roadmap for your country couldn't be generated; retake the assessment later to get it.");
+    }
+    setSubmitting(false);
+    window.scrollTo({ top: 0 });
   };
+
+  const retake = () => {
+    updateProgress((p) => ({ ...p, report: null, activeTrackId: undefined }));
+    setStartMode("assessment");
+    setRetakeConfirm(false);
+    setView("path");
+  };
+
+  const navItems: { id: View; label: string }[] = [
+    { id: "path", label: fr ? "Mon parcours" : "My path" },
+    { id: "goals", label: fr ? "Mes objectifs" : "My goals" },
+    { id: "courses", label: fr ? "Cours" : "Courses" },
+    { id: "projects", label: fr ? "Projets" : "Projects" },
+    { id: "plans", label: fr ? "Abonnement" : "Plans" },
+  ];
+
+  const go = (v: View) => {
+    setView(v);
+    setMenuOpen(false);
+    window.scrollTo({ top: 0 });
+  };
+
+  const languageToggle = (
+    <div role="group" aria-label={fr ? "Langue" : "Language"} className="flex border border-ink-700 rounded-xl overflow-hidden shrink-0">
+      {(["english", "french"] as Lang[]).map((l) => (
+        <button
+          key={l}
+          type="button"
+          aria-pressed={language === l}
+          onClick={() => updateLanguage(l)}
+          className={`h-10 px-3 text-sm font-semibold ${language === l ? "bg-ink-800 text-chalk" : "text-mist hover:text-chalk"}`}
+        >
+          {l === "english" ? "EN" : "FR"}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300 ${
-      theme === "dark" 
-        ? "bg-slate-950 bg-vibrant-gradient text-slate-100" 
-        : "bg-slate-50 bg-vibrant-gradient text-slate-900"
-    }`}>
-      
-      {/* Decorative ambient background glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 print:hidden">
-        <div className={`absolute top-[-10%] right-[10%] w-[600px] h-[600px] rounded-full blur-[130px] transition-opacity duration-300 ${theme === "dark" ? "bg-indigo-500/10 opacity-100" : "bg-indigo-500/5 opacity-80"}`} />
-        <div className={`absolute bottom-[20%] left-[10%] w-[500px] h-[500px] rounded-full blur-[120px] transition-opacity duration-300 ${theme === "dark" ? "bg-blue-600/8 opacity-100" : "bg-blue-600/3 opacity-80"}`} />
-      </div>
-
-      {/* Top Professional Header Bar */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md py-4 px-6 print:hidden transition-colors duration-300 ${
-        theme === "dark" 
-          ? "bg-slate-950/80 border-slate-900/60" 
-          : "bg-white/80 border-slate-200/60"
-      }`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div 
-            onClick={handleLogoClick}
-            className="flex items-center gap-3 select-none cursor-pointer group hover:opacity-90 transition-all duration-200"
-            title={selectedLanguage === "french" ? "Retour à l'accueil ProPath" : "Navigate back to ProPath Home"}
-            id="propath-logo-and-title-nav"
-          >
-            <ProPathLogo className="h-[45px] w-auto rounded-[7px] transition-transform group-hover:scale-105" />
-            <div>
-              <span className={`text-sm font-bold font-display tracking-tight block transition-colors ${
-                theme === "dark" ? "text-white group-hover:text-indigo-200" : "text-slate-900 group-hover:text-indigo-600"
-              }`}>
-                Pro<span className="text-indigo-500 dark:text-indigo-400">Path</span>
-              </span>
-              <span className="text-[9px] text-slate-500 tracking-wider uppercase font-semibold font-mono block leading-none">
-                {selectedLanguage === "french" ? "Intelligence Vocationnelle" : "Vocational Intelligence"}
-              </span>
-            </div>
-          </div>
-
-          {/* Desktop Controls */}
-          <div className="hidden md:flex items-center gap-3 text-xs font-mono">
-            {/* Country and Language Quick Switchers */}
-            <div className="flex items-center gap-1.5 border-r border-slate-800/80 pr-3 mr-1">
-              <select
-                value={selectedLanguage}
-                onChange={(e) => updateLanguage(e.target.value as "english" | "french")}
-                className="bg-slate-900/60 border border-slate-800 text-slate-300 text-[10px] rounded px-1.5 py-1 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
-                title="Select Language"
-              >
-                <option value="english">🇬🇧 EN</option>
-                <option value="french">🇫🇷 FR</option>
-              </select>
-
-              <select
-                value={selectedCountry}
-                onChange={(e) => updateCountry(e.target.value)}
-                className="bg-slate-900/60 border border-slate-800 text-slate-300 text-[10px] rounded px-1.5 py-1 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
-                title="Select Country"
-              >
-                <option value="" disabled>{selectedLanguage === "french" ? "Choisir Pays" : "Select Country"}</option>
-                {SUPPORTED_COUNTRIES.map(c => (
-                  <option key={c.code} value={c.name}>
-                    {c.flag} {c.code}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Digital Marketing AI Courses Button */}
-            <button
-              onClick={() => {
-                setShowDigitalMarketingHub(!showDigitalMarketingHub);
-                setShowCreativeDesignHub(false);
-                setIsAdminView(false);
-              }}
-              className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm ${
-                showDigitalMarketingHub
-                  ? "border-purple-500 bg-purple-500/20 text-purple-300"
-                  : theme === "dark"
-                    ? "border-purple-500/40 bg-purple-950/40 text-purple-300 hover:bg-purple-900/60 hover:text-white hover:border-purple-400"
-                    : "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-900 hover:border-purple-400"
-              }`}
-              title={selectedLanguage === "french" ? "Cours Marketing Digital (IA Gemini)" : "Digital Marketing AI Courses"}
-              id="digital-marketing-courses-button"
-            >
-              <Megaphone className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
-              <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-            </button>
-
-            {/* Creative Digital Design AI Courses Button */}
-            <button
-              onClick={() => {
-                setShowCreativeDesignHub(!showCreativeDesignHub);
-                setShowDigitalMarketingHub(false);
-                setIsAdminView(false);
-              }}
-              className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm ${
-                showCreativeDesignHub
-                  ? "border-pink-500 bg-pink-500/20 text-pink-300"
-                  : theme === "dark"
-                    ? "border-pink-500/40 bg-pink-950/40 text-pink-300 hover:bg-pink-900/60 hover:text-white hover:border-pink-400"
-                    : "border-pink-300 bg-pink-50 text-pink-700 hover:bg-pink-100 hover:text-pink-900 hover:border-pink-400"
-              }`}
-              title={selectedLanguage === "french" ? "Cours Design Numérique (IA Gemini)" : "Creative Design AI Courses"}
-              id="creative-design-courses-button"
-            >
-              <Palette className="w-3.5 h-3.5 text-pink-400 fill-pink-400/20" />
-              <span>{selectedLanguage === "french" ? "Design Numérique (IA)" : "Creative Design AI"}</span>
-              <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
-            </button>
-
-            {/* Admin Portal Toggle Link */}
-            <button
-              onClick={() => setIsAdminView(!isAdminView)}
-              className={`px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-xs font-bold font-sans flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
-                isAdminView
-                  ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
-                  : theme === "dark"
-                    ? "border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-900 hover:text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-              title="Admin Console"
-              id="admin-portal-toggle"
-            >
-              <Shield className="w-3.5 h-3.5 text-indigo-500" />
-              <span>{isAdminView ? (selectedLanguage === "french" ? "Quitter Admin" : "Exit Admin") : (selectedLanguage === "french" ? "Portail Admin" : "Admin Console")}</span>
-            </button>
-
-            {/* Theme Toggle Button */}
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`p-1.5 rounded-lg border transition-all duration-200 cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95 ${
-                theme === "dark" 
-                  ? "border-slate-800 bg-slate-900/60 text-amber-400 hover:bg-slate-900 hover:text-amber-300" 
-                  : "border-slate-200 bg-white text-indigo-600 hover:bg-slate-50 hover:text-indigo-700"
-              }`}
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              id="theme-toggle"
-            >
-              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-            </button>
-
-            {report && !window.location.search.includes("reportId") && !isAdminView && (
+    <div className="min-h-screen flex flex-col bg-ink-900 text-chalk font-sans">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 pp-btn pp-btn-primary">
+        {fr ? "Aller au contenu" : "Skip to content"}
+      </a>
+      <header className="sticky top-0 z-40 bg-ink-900 border-b border-ink-700 print:hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+          <button type="button" onClick={() => go("path")} className="flex items-center shrink-0" aria-label={fr ? "ProPath, accueil" : "ProPath home"}>
+            <ProPathLogo className="h-10 w-auto rounded-lg" />
+          </button>
+          <nav aria-label={fr ? "Navigation principale" : "Main"} className="hidden md:flex items-center gap-1 flex-1">
+            {navItems.map((item) => (
               <button
-                onClick={confirmReset}
-                className={`${
-                  theme === "dark" ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-700"
-                } transition font-bold font-sans cursor-pointer`}
+                key={item.id}
+                type="button"
+                onClick={() => go(item.id)}
+                aria-current={view === item.id ? "page" : undefined}
+                className={`h-10 px-3 rounded-xl text-sm font-medium ${view === item.id ? "text-chalk bg-ink-800" : "text-mist hover:text-chalk"}`}
               >
-                {selectedLanguage === "french" ? "Réinitialiser" : "Reset"}
+                {item.label}
               </button>
-            )}
-          </div>
-
-          {/* Smartphone / Mobile Hamburger Menu Toggle Button */}
-          <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-xl border transition cursor-pointer ${
-                theme === "dark"
-                  ? "border-slate-800 bg-slate-900/90 text-slate-300 hover:text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:text-slate-900"
-              }`}
-              aria-label="Toggle Navigation Menu"
-              id="mobile-menu-toggle"
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5 text-indigo-400" /> : <Menu className="w-5 h-5 text-indigo-400" />}
+            ))}
+          </nav>
+          <div className="hidden md:flex items-center gap-3">
+            {languageToggle}
+            <button type="button" onClick={() => setAccountOpen(true)} className="h-10 px-3 rounded-xl border border-ink-700 flex items-center gap-2 text-sm text-mist hover:text-chalk">
+              <User className="w-4 h-4" aria-hidden="true" />
+              <span className="max-w-[160px] truncate">{isGuest ? (fr ? "Se connecter" : "Sign in") : user?.email}</span>
+              {access.plan !== "free" && <span className="pp-chip bg-gold-soft text-gold-text !py-0.5">{access.plan === "pro" ? "Pro" : "Basic"}</span>}
             </button>
           </div>
+          <button type="button" className="md:hidden ml-auto w-11 h-11 rounded-xl border border-ink-700 flex items-center justify-center" aria-label={fr ? "Menu" : "Menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+          </button>
         </div>
-
-        {/* Smartphone / Mobile Collapsible Dropdown Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`md:hidden overflow-hidden border-t mt-3 pt-3 px-1 flex flex-col gap-3 font-mono text-xs ${
-                theme === "dark" ? "border-slate-800/80 text-slate-200" : "border-slate-200 text-slate-800"
-              }`}
-            >
-              {/* Language & Country Switchers */}
-              <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/40 dark:bg-slate-900/70 border border-slate-800/60">
-                <span className="text-[11px] font-sans font-semibold text-slate-400">
-                  {selectedLanguage === "french" ? "Langue & Région :" : "Language & Region:"}
-                </span>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedLanguage}
-                    onChange={(e) => updateLanguage(e.target.value as "english" | "french")}
-                    className="bg-slate-900/90 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    <option value="english">🇬🇧 EN</option>
-                    <option value="french">🇫🇷 FR</option>
-                  </select>
-
-                  <select
-                    value={selectedCountry}
-                    onChange={(e) => updateCountry(e.target.value)}
-                    className="bg-slate-900/90 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 font-sans font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    <option value="" disabled>{selectedLanguage === "french" ? "Pays" : "Country"}</option>
-                    {SUPPORTED_COUNTRIES.map(c => (
-                      <option key={c.code} value={c.name}>
-                        {c.flag} {c.code}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Digital Marketing AI Courses Button */}
-              <button
-                onClick={() => {
-                  setShowDigitalMarketingHub(!showDigitalMarketingHub);
-                  setShowCreativeDesignHub(false);
-                  setIsAdminView(false);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
-                  showDigitalMarketingHub
-                    ? "border-purple-500 bg-purple-500/20 text-purple-300"
-                    : theme === "dark"
-                      ? "border-purple-500/40 bg-purple-950/40 text-purple-300 hover:bg-purple-900/60"
-                      : "border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Megaphone className="w-4 h-4 text-purple-400 fill-purple-400/20" />
-                  <span>{selectedLanguage === "french" ? "Marketing Digital (IA)" : "Digital Marketing AI"}</span>
-                </div>
-                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+        {menuOpen && (
+          <div className="md:hidden border-t border-ink-700 px-4 py-3 flex flex-col gap-2">
+            {navItems.map((item) => (
+              <button key={item.id} type="button" onClick={() => go(item.id)} aria-current={view === item.id ? "page" : undefined}
+                className={`min-h-[48px] px-3 rounded-xl text-left font-medium ${view === item.id ? "bg-ink-800 text-chalk" : "text-mist"}`}>
+                {item.label}
               </button>
-
-              {/* Creative Digital Design AI Courses Button */}
-              <button
-                onClick={() => {
-                  setShowCreativeDesignHub(!showCreativeDesignHub);
-                  setShowDigitalMarketingHub(false);
-                  setIsAdminView(false);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
-                  showCreativeDesignHub
-                    ? "border-pink-500 bg-pink-500/20 text-pink-300"
-                    : theme === "dark"
-                      ? "border-pink-500/40 bg-pink-950/40 text-pink-300 hover:bg-pink-900/60"
-                      : "border-pink-300 bg-pink-50 text-pink-700 hover:bg-pink-100"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-pink-400 fill-pink-400/20" />
-                  <span>{selectedLanguage === "french" ? "Design Numérique (IA)" : "Creative Design AI"}</span>
-                </div>
-                <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
+            ))}
+            <div className="flex items-center justify-between gap-3 pt-2">
+              {languageToggle}
+              <button type="button" onClick={() => { setAccountOpen(true); setMenuOpen(false); }} className="pp-btn pp-btn-secondary flex-1">
+                <User className="w-4 h-4" aria-hidden="true" />{isGuest ? (fr ? "Créer un compte" : "Create account") : (fr ? "Mon compte" : "My account")}
               </button>
-
-              {/* Admin Portal Link */}
-              <button
-                onClick={() => {
-                  setIsAdminView(!isAdminView);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-between text-xs cursor-pointer ${
-                  isAdminView
-                    ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
-                    : theme === "dark"
-                      ? "border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-indigo-500" />
-                  <span>{isAdminView ? (selectedLanguage === "french" ? "Quitter Admin" : "Exit Admin") : (selectedLanguage === "french" ? "Portail Admin" : "Admin Console")}</span>
-                </div>
-              </button>
-
-              {/* Theme Switch & Reset */}
-              <div className="flex items-center justify-between gap-2 pt-1 pb-1">
-                <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className={`flex-1 py-2.5 px-3 rounded-xl border transition font-bold font-sans flex items-center justify-center gap-2 text-xs cursor-pointer ${
-                    theme === "dark"
-                      ? "border-slate-800 bg-slate-900/80 text-amber-400 hover:bg-slate-800"
-                      : "border-slate-200 bg-white text-indigo-600 hover:bg-slate-100"
-                  }`}
-                >
-                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                  <span>{theme === "dark" ? (selectedLanguage === "french" ? "Mode Clair" : "Light Mode") : (selectedLanguage === "french" ? "Mode Sombre" : "Dark Mode")}</span>
-                </button>
-
-                {report && !window.location.search.includes("reportId") && !isAdminView && (
-                  <button
-                    onClick={() => {
-                      confirmReset();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-4 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-xs font-sans font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"
-                  >
-                    {selectedLanguage === "french" ? "Réinitialiser" : "Reset"}
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 py-8 px-4 md:px-8 relative z-10 max-w-7xl mx-auto w-full">
-        
-        {/* Loader for Shared Report retrieval */}
-        {loadingShared ? (
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-            <div className="relative mb-6">
-              <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin" />
-              <ProPathLogo className="absolute inset-0 m-auto w-7 h-7 animate-pulse" />
-            </div>
-            <h3 className="text-lg font-bold font-display text-white">
-              Retrieving Shared Vocational Dossier
-            </h3>
-            <p className="text-xs text-slate-400 mt-2 max-w-sm">
-              Connecting to secure cloud vaults to download matched career tracks and mentorship checklists...
-            </p>
-          </div>
-        ) : sharedError ? (
-          /* Error display for invalid shared report */
-          <div className="min-h-[50vh] flex flex-col items-center justify-center text-center max-w-md mx-auto">
-            <div className="p-4 bg-red-500/10 text-red-400 rounded-2xl border border-red-500/20 mb-4">
-              <AlertCircle className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-bold font-display text-white">
-              Dossier Retrieval Failed
-            </h3>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              {sharedError}
-            </p>
-            <button
-              onClick={() => {
-                setSharedError(null);
-                // Clear query parameters
-                const url = new URL(window.location.href);
-                url.searchParams.delete("reportId");
-                window.history.pushState({}, "", url.toString());
-              }}
-              className="mt-6 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-6 py-2.5 rounded-xl text-xs font-semibold transition"
-            >
-              Start New Evaluation
-            </button>
-          </div>
-        ) : showDigitalMarketingHub ? (
-          /* Route to Standalone Digital Marketing AI Academy Page */
-          <motion.div
-            key="digital-marketing-view"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <DigitalMarketingCourseHub
-              onBack={() => setShowDigitalMarketingHub(false)}
-              language={selectedLanguage}
-              theme={theme}
-            />
-          </motion.div>
-        ) : showCreativeDesignHub ? (
-          /* Route to Standalone Creative Digital Design AI Academy Page */
-          <motion.div
-            key="creative-design-view"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <CreativeDesignCourseHub
-              onBack={() => setShowCreativeDesignHub(false)}
-              language={selectedLanguage}
-              theme={theme}
-            />
-          </motion.div>
-        ) : isAdminView ? (
-          /* Route to Partner and Application Admin Console */
-          <motion.div
-            key="admin-view"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <AdminPortal onBack={() => setIsAdminView(false)} theme={theme} />
-          </motion.div>
+      <main id="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <Suspense fallback={<div className="flex justify-center py-20"><Spinner className="w-8 h-8" /></div>}>
+        {view === "admin" ? (
+          <>
+            <BillingAdmin />
+            <MarketplaceAdmin />
+            <AdminPortal onBack={() => go("path")} theme={theme} />
+          </>
+        ) : view === "courses" ? (
+          <CoursesPage language={language} initialTutorCourse={reopenCourse} />
+        ) : view === "teach" ? (
+          <TeachPage language={language} />
+        ) : view === "plans" ? (
+          <PlansPage language={language} countryCode={countryCode} />
+        ) : view === "projects" ? (
+          <ProjectManager
+            language={language}
+            country={countryLabel}
+            onBack={() => go("path")}
+            onUpgrade={() => go("plans")}
+            initialIdea={projectIdea}
+            onIdeaUsed={() => setProjectIdea(null)}
+          />
+        ) : view === "goals" ? (
+          <GoalsPage language={language} country={countryLabel} onBuildProject={(idea) => { setProjectIdea(idea); go("projects"); }} />
+        ) : !country ? (
+          <Onboarding language={language} onLanguage={updateLanguage} onCountry={updateCountry} />
+        ) : progress.report && progress.report.profile ? (
+          <CareerDashboard
+            report={progress.report}
+            language={language}
+            country={countryLabel}
+            onRetake={() => setRetakeConfirm(true)}
+            onOpenProjects={() => go("projects")}
+            onOpenGoals={() => go("goals")}
+          />
+        ) : startMode === "choose" ? (
+          <StartChoice language={language} onAssessment={() => setStartMode("assessment")} onGoal={() => go("goals")} />
         ) : (
-          <AnimatePresence mode="wait">
-            {!hasOnboarded ? (
-              /* Step 0: Regional & Language Onboarding */
-              <motion.div
-                key="onboarding-view"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                className="max-w-2xl mx-auto glass-card p-6 md:p-10 shadow-2xl relative overflow-hidden"
-              >
-                {/* Decorative glows */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl" />
-
-                <div className="text-center mb-8 relative z-10">
-                  <div className="flex justify-center mb-6">
-                    <ProPathLogo className="h-20 w-auto rounded-[15px]" />
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
-                    {selectedLanguage === "french" ? "Bienvenue sur ProPath" : "Welcome to ProPath"}
-                  </h2>
-                  <p className="text-slate-400 mt-2 text-xs md:text-sm">
-                    {selectedLanguage === "french"
-                      ? "Configurez vos préférences linguistiques et régionales afin d'obtenir des salaires, programmes et débouchés adaptés à votre pays de résidence."
-                      : "Configure your language and regional preferences to align educational programs, local trainers, and market salary realities."}
-                  </p>
-                </div>
-
-                {/* Language Select */}
-                <div className="mb-8 relative z-10">
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-indigo-400 font-mono mb-3">
-                    {selectedLanguage === "french" ? "1. Choisissez votre langue" : "1. Choose Your Language"}
-                  </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => updateLanguage("english")}
-                      className={`p-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
-                        selectedLanguage === "english"
-                          ? "bg-indigo-600/20 border-indigo-500 text-white font-extrabold shadow"
-                          : "bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                      }`}
-                    >
-                      <span className="text-lg">🇬🇧</span> English
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateLanguage("french")}
-                      className={`p-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
-                        selectedLanguage === "french"
-                          ? "bg-indigo-600/20 border-indigo-500 text-white font-extrabold shadow"
-                          : "bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                      }`}
-                    >
-                      <span className="text-lg">🇫🇷</span> Français
-                    </button>
-                  </div>
-                </div>
-
-                {/* Country Select */}
-                <div className="mb-8 relative z-10">
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-indigo-400 font-mono mb-3">
-                    {selectedLanguage === "french" ? "2. Sélectionnez votre pays de résidence" : "2. Select Your Country of Residence"}
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {SUPPORTED_COUNTRIES.map((cnt) => {
-                      const isSelected = selectedCountry === cnt.name;
-                      return (
-                        <button
-                          key={cnt.code}
-                          type="button"
-                          onClick={() => updateCountry(cnt.name)}
-                          className={`p-3.5 rounded-xl border text-xs flex flex-col items-center text-center justify-between h-24 transition cursor-pointer ${
-                            isSelected
-                              ? "bg-indigo-600/20 border-indigo-500 text-white font-bold shadow border-2"
-                              : "bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                          }`}
-                        >
-                          <span className="text-2xl mb-1">{cnt.flag}</span>
-                          <div>
-                            <span className="font-semibold block truncate max-w-full leading-none">{cnt.name}</span>
-                            <span className="text-[9px] text-slate-500 font-mono mt-1 block uppercase">{cnt.currency}</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Proceed Button */}
-                <button
-                  type="button"
-                  disabled={!selectedCountry}
-                  onClick={() => setHasOnboarded(true)}
-                  className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 relative z-10 ${
-                    selectedCountry
-                      ? "accent-gradient text-white hover:opacity-95 hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 cursor-pointer"
-                      : "bg-slate-800 text-slate-500 cursor-not-allowed"
-                  }`}
-                >
-                  <span>
-                    {selectedLanguage === "french"
-                      ? (report ? "Accéder au Dossier" : "Commencer l'évaluation")
-                      : (report ? "Access Personal Dossier" : "Proceed to Assessment")}
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </motion.div>
-            ) : !report ? (
-              /* Step 1: Scenario Assessment Quiz */
-              <motion.div
-                key="quiz-view"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.4 }}
-              >
-                {/* Visual Intro Banner */}
-                <div className="text-center max-w-3xl mx-auto mb-10 mt-4">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                    {selectedLanguage === "french" ? "Découverte Professionnelle Nouvelle Génération" : "Next-Generation Professional Discovery"}
-                  </span>
-                  <h1 className="text-3.5xl md:text-5xl font-black font-display text-white tracking-tight leading-tight mt-4">
-                    {selectedLanguage === "french" ? (
-                      <>
-                        Associez votre Aptitude à des <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500">
-                          Métiers d'Avenir
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        Map Your Aptitude to <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500">
-                          High-Growth Careers
-                        </span>
-                      </>
-                    )}
-                  </h1>
-                  <p className="text-slate-400 text-xs md:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
-                    {selectedLanguage === "french"
-                      ? "ProPath est une plateforme intelligente d'orientation. Nous décryptons votre style de résolution de problèmes à l'aide de scénarios réels pour concevoir des plans de carrière sur mesure."
-                      : "ProPath is an immersive vocational intelligence platform. We decode your problem-solving style through dynamic real-world scenarios to design actionable execution roadmaps."}
-                  </p>
-                </div>
-
-                <AssessmentQuiz
-                  onSubmit={handleQuizSubmit}
-                  isLoading={submittingAssessment}
-                  selectedLanguage={selectedLanguage}
-                  selectedCountry={selectedCountry}
-                />
-              </motion.div>
-            ) : (
-              /* Step 2: Dashboard & Mentorship View */
-              <motion.div
-                key="dashboard-view"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {/* Actionable Report Header Controls */}
-                <ReportHeader
-                  report={report}
-                  onRestart={confirmReset}
-                  isSharedView={!report.id.startsWith("local_")}
-                  selectedLanguage={selectedLanguage}
-                />
-
-                {/* Dashboard grid visualizers */}
-                <Dashboard
-                  report={report}
-                  onUpdateGoals={handleUpdateGoals}
-                  selectedLanguage={selectedLanguage}
-                  selectedCountry={selectedCountry}
-                  onOpenDigitalMarketingHub={() => {
-                    setShowDigitalMarketingHub(true);
-                    setShowCreativeDesignHub(false);
-                  }}
-                  onOpenCreativeDesignHub={() => {
-                    setShowCreativeDesignHub(true);
-                    setShowDigitalMarketingHub(false);
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex flex-col gap-8">
+            <div className="max-w-2xl mx-auto text-center flex flex-col gap-3">
+              <p className="pp-eyebrow">{fr ? "Évaluation ProPath · environ 10 minutes" : "ProPath assessment · about 10 minutes"}</p>
+              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                {fr ? "Découvrez les métiers faits pour vous" : "Find the work that fits you"}
+              </h1>
+              <p className="text-mist text-[17px]">
+                {fr
+                  ? "Dites-nous ce que vous aimeriez faire et ce que vous savez faire. ProPath vous montre les métiers qui vous correspondent et comment y arriver."
+                  : "Tell us what you'd enjoy and what you're good at. ProPath shows you the work that fits and how to get there."}
+              </p>
+            </div>
+            <CareerAssessment language={language} submitting={submitting} onSubmit={handleSubmit} />
+          </div>
         )}
+        </Suspense>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-mono print:hidden mt-12">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <div>
-            <span>© {new Date().getFullYear()} ProPath. All Rights Reserved.</span>
-          </div>
+      <footer className="border-t border-ink-700 py-6 print:hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-sm text-dim">
+          <span>© {new Date().getFullYear()} ProPath</span>
+          <span className="flex items-center gap-2">
+            {cloudSync ? <Cloud className="w-4 h-4 text-path" aria-hidden="true" /> : <CloudOff className="w-4 h-4" aria-hidden="true" />}
+            {cloudSync ? (fr ? "Progression enregistrée" : "Progress saved") : (fr ? "Progression enregistrée sur cet appareil" : "Progress saved on this device")}
+          </span>
+          <span className="flex items-center gap-4">
+            {country && (
+              <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => updateCountry("")}>
+                {countryLabel} · {fr ? "changer" : "change"}
+              </button>
+            )}
+            <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => go("teach")}>{fr ? "Enseigner sur ProPath" : "Teach on ProPath"}</button>
+            <button type="button" className="hover:text-chalk min-h-[44px]" onClick={() => go("admin")}>Admin</button>
+          </span>
         </div>
       </footer>
 
-      {/* Branded Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={confirmReset}
-      />
-
-      {/* Dynamic Submit Error Toast */}
-      <AnimatePresence>
-        {submitError && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 max-w-sm glass-card border border-red-500/30 p-4 shadow-2xl flex items-start gap-3"
-            id="error-toast-dossier"
-          >
-            <div className="p-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">
-              <AlertCircle className="w-5 h-5 animate-bounce" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-white font-display">
-                {selectedLanguage === "french" ? "Notification d'Orientation" : "Alignment Notice"}
-              </h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                {submitError}
-              </p>
-              <button
-                onClick={() => setSubmitError(null)}
-                className="text-[10px] uppercase font-bold tracking-wider text-indigo-400 hover:text-indigo-300 mt-2 block transition cursor-pointer"
-              >
-                {selectedLanguage === "french" ? "Fermer" : "Dismiss"}
-              </button>
-            </div>
-          </motion.div>
+      <Modal open={accountOpen} onClose={() => setAccountOpen(false)} title={isGuest ? (fr ? "Connexion à ProPath" : "Sign in to ProPath") : (fr ? "Mon compte" : "My account")}>
+        {isGuest ? (
+          <div className="flex flex-col gap-4">
+            <p className="text-body text-[15px]">
+              {fr
+                ? "Créez votre compte pour commencer les cours, parler au tuteur et suivre votre progression. Vos résultats d'évaluation sont conservés."
+                : "Create your account to start courses, talk to the tutor and track your progress. Your assessment results are kept."}
+            </p>
+            <AccountForm language={language} onDone={() => setAccountOpen(false)} />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <p className="text-body">{user?.email}</p>
+            <p className="text-sm text-mist">
+              {access.plan !== "free"
+                ? `ProPath ${access.plan === "pro" ? "Pro" : "Basic"}` + (access.expiresAt ? ` · ${fr ? "jusqu'au" : "until"} ${new Date(access.expiresAt).toLocaleDateString(fr ? "fr-FR" : "en-US")}` : "")
+                : (fr ? "Formule gratuite" : "Free plan")}
+            </p>
+            <button type="button" className="pp-btn pp-btn-primary" onClick={() => { setAccountOpen(false); go("plans"); }}>
+              {access.plan === "free" ? (fr ? "Voir les formules" : "See plans") : (fr ? "Gérer mon abonnement" : "Manage my plan")}
+            </button>
+            <button type="button" className="pp-btn pp-btn-secondary" onClick={() => { signOut(); setAccountOpen(false); }}>
+              {fr ? "Se déconnecter" : "Sign out"}
+            </button>
+          </div>
         )}
-      </AnimatePresence>
+      </Modal>
+
+      <Modal open={retakeConfirm} onClose={() => setRetakeConfirm(false)} title={fr ? "Refaire l'évaluation ?" : "Retake the assessment?"}>
+        <div className="flex flex-col gap-4">
+          <p className="text-body">
+            {fr
+              ? "Vos nouveaux résultats remplaceront les actuels. Vos cours et vos projets sont conservés."
+              : "Your new results will replace the current ones. Your courses and projects are kept."}
+          </p>
+          <div className="flex gap-3">
+            <button type="button" className="pp-btn pp-btn-secondary flex-1" onClick={() => setRetakeConfirm(false)}>{fr ? "Annuler" : "Cancel"}</button>
+            <button type="button" className="pp-btn pp-btn-primary flex-1" onClick={retake}>{fr ? "Refaire" : "Retake"}</button>
+          </div>
+        </div>
+      </Modal>
+
+      {paymentId && (
+        <Suspense fallback={null}>
+          <PaymentReturn transactionId={paymentId} language={language} onDone={closePayment} />
+        </Suspense>
+      )}
+
+      {notice && (
+        <div role="status" className="fixed bottom-4 inset-x-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 pp-card p-4 flex gap-3 items-start">
+          <p className="text-sm text-body flex-1">{notice}</p>
+          <button type="button" aria-label={fr ? "Fermer" : "Dismiss"} className="w-9 h-9 -m-1 rounded-lg flex items-center justify-center text-mist hover:bg-ink-800" onClick={() => setNotice(null)}>
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StartChoice({ language, onAssessment, onGoal }: { language: Lang; onAssessment: () => void; onGoal: () => void }) {
+  const fr = language === "french";
+  const doors = [
+    {
+      onClick: onAssessment,
+      eyebrow: fr ? "Environ 10 minutes" : "About 10 minutes",
+      title: fr ? "Aidez-moi à trouver ma voie" : "Help me find my path",
+      text: fr
+        ? "Vous ne savez pas encore quel métier choisir ? Répondez à des questions simples : ProPath vous montre les métiers qui vous correspondent et comment y arriver."
+        : "Not sure what to do yet? Answer simple questions and ProPath shows you the work that fits you and how to get there.",
+      cta: fr ? "Faire l'évaluation" : "Take the assessment",
+    },
+    {
+      onClick: onGoal,
+      eyebrow: fr ? "Environ 2 minutes" : "About 2 minutes",
+      title: fr ? "J'ai déjà un projet ou un objectif" : "I already have a project or goal",
+      text: fr
+        ? "Décrivez ce que vous voulez faire : ProPath vous dit quelles compétences apprendre, dans quel ordre, avec un cours pour chacune."
+        : "Describe what you want to do and ProPath tells you which skills to learn, in what order, with a course for each.",
+      cta: fr ? "Décrire mon objectif" : "Describe my goal",
+    },
+  ];
+  return (
+    <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+      <div className="text-center flex flex-col gap-3">
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{fr ? "Par où voulez-vous commencer ?" : "Where would you like to start?"}</h1>
+        <p className="text-mist text-[17px]">{fr ? "Le talent est partout. ProPath trace le chemin." : "Talent is everywhere. ProPath shows the path."}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {doors.map((d) => (
+          <button key={d.title} type="button" onClick={d.onClick} className="pp-card p-6 sm:p-8 flex flex-col gap-3 text-left hover:!border-path">
+            <span className="pp-eyebrow">{d.eyebrow}</span>
+            <span className="font-display text-xl font-semibold text-chalk">{d.title}</span>
+            <span className="text-[15px] text-mist leading-relaxed flex-1">{d.text}</span>
+            <span className="inline-flex items-center gap-2 font-semibold text-path-text mt-2">{d.cta} <ArrowRight className="w-4 h-4" aria-hidden="true" /></span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Onboarding({ language, onLanguage, onCountry }: { language: Lang; onLanguage: (l: Lang) => void; onCountry: (c: string) => void }) {
+  const fr = language === "french";
+  const [selected, setSelected] = useState("");
+  return (
+    <div className="max-w-xl mx-auto pp-card p-6 sm:p-10 flex flex-col gap-8">
+      <div className="flex flex-col items-center text-center gap-4">
+        <ProPathLogo className="h-20 w-auto rounded-xl" />
+        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{fr ? "Bienvenue sur ProPath" : "Welcome to ProPath"}</h1>
+        <p className="text-mist">{fr ? "Le talent est partout. ProPath trace le chemin." : "Talent is everywhere. ProPath shows the path."}</p>
+      </div>
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-[16px] font-medium mb-3">{fr ? "Votre langue" : "Your language"}</legend>
+        <div className="grid grid-cols-2 gap-3">
+          {(["french", "english"] as Lang[]).map((l) => (
+            <button key={l} type="button" aria-pressed={language === l} onClick={() => onLanguage(l)}
+              className={`min-h-[52px] rounded-xl border font-semibold ${language === l ? "border-path bg-path-soft text-chalk" : "border-ink-600 text-mist hover:bg-ink-800"}`}>
+              {l === "french" ? "Français" : "English"}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-[16px] font-medium mb-3">{fr ? "Votre pays" : "Your country"}</legend>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {COUNTRIES.map((c) => (
+            <button key={c.code} type="button" aria-pressed={selected === c.name} onClick={() => setSelected(c.name)}
+              className={`min-h-[52px] px-3 rounded-xl border text-sm font-semibold ${selected === c.name ? "border-path bg-path-soft text-chalk" : "border-ink-600 text-mist hover:bg-ink-800"}`}>
+              {c.label[fr ? "fr" : "en"]}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <button type="button" className="pp-btn pp-btn-primary" disabled={!selected} onClick={() => onCountry(selected)}>
+        {fr ? "Commencer" : "Get started"} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+      </button>
     </div>
   );
 }

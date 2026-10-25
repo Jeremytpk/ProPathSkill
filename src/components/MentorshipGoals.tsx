@@ -185,9 +185,9 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
       case "Medium":
         return "bg-amber-500/10 text-amber-400 border-amber-500/20";
       case "Low":
-        return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+        return "bg-slate-500/10 text-mist border-slate-500/20";
       default:
-        return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+        return "bg-slate-500/10 text-mist border-slate-500/20";
     }
   };
 
@@ -203,15 +203,15 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
   return (
     <div className="glass-card p-6 md:p-8" id="goal-board-section">
       {/* Title & View Toggles Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-slate-800/80 pb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-ink-700/80 pb-6">
         <div>
           <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 bg-indigo-400/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
             {isFrench ? "Tableau d'Orientation et Objectifs" : "Personal Goal Board & Timelines"}
           </span>
-          <h3 className="text-xl font-black font-display text-white mt-3">
+          <h3 className="text-xl font-black font-display text-chalk mt-3">
             {isFrench ? "Suivi Intégral d'Objectifs Professionnels" : "Interactive Career Goal Board"}
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-mist mt-1">
             {isFrench 
               ? "Gérez votre feuille de route, collaborez avec des mentors et déplacez vos objectifs en temps réel."
               : "Define target priorities, set calendar due dates, and track target stages using drag-and-drop mechanics."}
@@ -220,10 +220,10 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
 
         <div className="flex flex-wrap items-center gap-4 shrink-0">
           {/* Circular Progress Gauge */}
-          <div className="flex items-center gap-3 bg-slate-900/60 rounded-xl px-4 py-2 border border-slate-800">
+          <div className="flex items-center gap-3 bg-ink-850/60 rounded-xl px-4 py-2 border border-ink-700">
             <div className="text-right">
-              <p className="text-[10px] text-slate-400 font-medium">{isFrench ? "Objectifs Atteints" : "Completed Goals"}</p>
-              <p className="text-sm font-bold text-white font-mono">{completedCount}/{normalizedGoals.length}</p>
+              <p className="text-[10px] text-mist font-medium">{isFrench ? "Objectifs Atteints" : "Completed Goals"}</p>
+              <p className="text-sm font-bold text-chalk font-mono">{completedCount}/{normalizedGoals.length}</p>
             </div>
             <div className="relative w-10 h-10 flex items-center justify-center">
               <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -245,13 +245,13 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
           </div>
 
           {/* View Toggles */}
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800/80">
+          <div className="flex bg-ink-900 p-1 rounded-xl border border-ink-700/80">
             <button
               onClick={() => setViewMode("board")}
               className={`p-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 viewMode === "board"
                   ? "bg-indigo-600 text-white shadow"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-mist hover:text-body"
               }`}
               title="Kanban Board View"
             >
@@ -263,7 +263,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
               className={`p-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 viewMode === "list"
                   ? "bg-indigo-600 text-white shadow"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-mist hover:text-body"
               }`}
               title="Simple Checklist View"
             >
@@ -275,13 +275,13 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
       </div>
 
       {/* Goal Addition Form */}
-      <div className="mb-8 bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 shadow-lg relative overflow-hidden">
+      <div className="mb-8 bg-ink-850/40 p-5 rounded-2xl border border-ink-700/60 shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
         
         <form onSubmit={handleAddGoal} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div className="md:col-span-6">
-              <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">
+              <label className="block text-[10px] uppercase font-bold text-mist mb-1.5">
                 {isFrench ? "Objectif Cible" : "Goal Description / Milestone Title"}
               </label>
               <input
@@ -290,18 +290,18 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                 value={newGoalText}
                 onChange={(e) => setNewGoalText(e.target.value)}
                 placeholder={isFrench ? "ex. Compléter la première certification DevOps..." : "e.g. Schedule AWS Cloud Practitioner Exam..."}
-                className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition font-sans"
+                className="w-full bg-ink-800/80 border border-ink-600/60 rounded-xl px-4 py-2.5 text-xs text-body placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition font-sans"
               />
             </div>
 
             <div className="md:col-span-4">
-              <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">
+              <label className="block text-[10px] uppercase font-bold text-mist mb-1.5">
                 {isFrench ? "Catégorie d'Objectif" : "Strategic Category"}
               </label>
               <select
                 value={newGoalCategory}
                 onChange={(e) => setNewGoalCategory(e.target.value as MentorGoal["category"])}
-                className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition font-sans font-semibold cursor-pointer"
+                className="w-full bg-ink-800/80 border border-ink-600/60 rounded-xl px-4 py-2.5 text-xs text-body focus:outline-none focus:ring-1 focus:ring-indigo-500 transition font-sans font-semibold cursor-pointer"
               >
                 <option value="Technical">{isFrench ? "Technique / Code" : "Technical (Skills & Courses)"}</option>
                 <option value="Leadership">Leadership & Project Management</option>
@@ -336,10 +336,10 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-950/30 border border-slate-800/60"
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-ink-900/30 border border-ink-700/60"
             >
               <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">{isFrench ? "Niveau de Priorité" : "Priority"}</label>
+                <label className="block text-[10px] uppercase font-bold text-mist mb-1.5">{isFrench ? "Niveau de Priorité" : "Priority"}</label>
                 <div className="flex gap-2">
                   {(["Low", "Medium", "High"] as const).map((p) => (
                     <button
@@ -349,7 +349,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                       className={`flex-1 py-1.5 px-3 border rounded-lg text-[10px] font-semibold transition cursor-pointer ${
                         newGoalPriority === p
                           ? "bg-indigo-600 text-white border-transparent"
-                          : "bg-slate-800/50 text-slate-400 border-slate-700/60 hover:text-slate-200"
+                          : "bg-ink-800/50 text-mist border-ink-600/60 hover:text-body"
                       }`}
                     >
                       {translatePriority(p)}
@@ -359,25 +359,25 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">{isFrench ? "Date d'Échéance" : "Target Due Date"}</label>
+                <label className="block text-[10px] uppercase font-bold text-mist mb-1.5">{isFrench ? "Date d'Échéance" : "Target Due Date"}</label>
                 <div className="relative">
                   <input
                     type="date"
                     value={newGoalDueDate}
                     onChange={(e) => setNewGoalDueDate(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-1.5 text-[10px] text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                    className="w-full bg-ink-800/80 border border-ink-600/60 rounded-lg px-3 py-1.5 text-[10px] text-body focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">{isFrench ? "Note / Description" : "Contextual Details"}</label>
+                <label className="block text-[10px] uppercase font-bold text-mist mb-1.5">{isFrench ? "Note / Description" : "Contextual Details"}</label>
                 <input
                   type="text"
                   value={newGoalDesc}
                   onChange={(e) => setNewGoalDesc(e.target.value)}
                   placeholder={isFrench ? "Spécifier les ressources ou le plan..." : "e.g. Discuss study schedule with John..."}
-                  className="w-full bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-1.5 text-[10px] text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-ink-800/80 border border-ink-600/60 rounded-lg px-3 py-1.5 text-[10px] text-body placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             </motion.div>
@@ -394,24 +394,24 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
             onDragOver={(e) => handleDragOver(e, "Planned")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "Planned")}
-            className={`rounded-2xl bg-slate-950/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
-              dragOverCol === "Planned" ? "border-indigo-500 bg-indigo-500/5 shadow-lg shadow-indigo-500/10" : "border-slate-850"
+            className={`rounded-2xl bg-ink-900/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
+              dragOverCol === "Planned" ? "border-indigo-500 bg-indigo-500/5 shadow-lg shadow-indigo-500/10" : "border-ink-700"
             }`}
           >
             <div>
-              <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-ink-700 pb-3 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                  <h4 className="text-sm font-black text-slate-200 uppercase tracking-wider">{isFrench ? "Planifié" : "Planned"}</h4>
+                  <h4 className="text-sm font-black text-body uppercase tracking-wider">{isFrench ? "Planifié" : "Planned"}</h4>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-slate-900 text-slate-400 px-2 py-0.5 border border-slate-800 rounded-full">
+                <span className="text-[10px] font-mono font-bold bg-ink-850 text-mist px-2 py-0.5 border border-ink-700 rounded-full">
                   {plannedGoals.length}
                 </span>
               </div>
 
               <div className="space-y-3">
                 {plannedGoals.length === 0 ? (
-                  <div className="text-center py-8 text-[11px] text-slate-500 italic border border-dashed border-slate-850 rounded-xl bg-slate-950/20">
+                  <div className="text-center py-8 text-[11px] text-dim italic border border-dashed border-ink-700 rounded-xl bg-ink-900/20">
                     {isFrench ? "Aucun objectif planifié" : "No goals planned yet"}
                   </div>
                 ) : (
@@ -437,7 +437,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                 )}
               </div>
             </div>
-            <div className="text-[10px] text-slate-500 text-center pt-4 italic font-mono border-t border-slate-850/50 mt-4">
+            <div className="text-[10px] text-dim text-center pt-4 italic font-mono border-t border-ink-700/50 mt-4">
               {isFrench ? "Glissez les cartes pour changer l'état" : "Drag card to change status"}
             </div>
           </div>
@@ -447,24 +447,24 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
             onDragOver={(e) => handleDragOver(e, "In Progress")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "In Progress")}
-            className={`rounded-2xl bg-slate-950/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
-              dragOverCol === "In Progress" ? "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/10" : "border-slate-850"
+            className={`rounded-2xl bg-ink-900/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
+              dragOverCol === "In Progress" ? "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/10" : "border-ink-700"
             }`}
           >
             <div>
-              <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-ink-700 pb-3 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <h4 className="text-sm font-black text-slate-200 uppercase tracking-wider">{isFrench ? "En Cours" : "In Progress"}</h4>
+                  <h4 className="text-sm font-black text-body uppercase tracking-wider">{isFrench ? "En Cours" : "In Progress"}</h4>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-slate-900 text-slate-400 px-2 py-0.5 border border-slate-800 rounded-full">
+                <span className="text-[10px] font-mono font-bold bg-ink-850 text-mist px-2 py-0.5 border border-ink-700 rounded-full">
                   {inProgressGoals.length}
                 </span>
               </div>
 
               <div className="space-y-3">
                 {inProgressGoals.length === 0 ? (
-                  <div className="text-center py-8 text-[11px] text-slate-500 italic border border-dashed border-slate-850 rounded-xl bg-slate-950/20">
+                  <div className="text-center py-8 text-[11px] text-dim italic border border-dashed border-ink-700 rounded-xl bg-ink-900/20">
                     {isFrench ? "Glissez un objectif ici pour commencer" : "No active work in progress"}
                   </div>
                 ) : (
@@ -490,7 +490,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                 )}
               </div>
             </div>
-            <div className="text-[10px] text-slate-500 text-center pt-4 italic font-mono border-t border-slate-850/50 mt-4">
+            <div className="text-[10px] text-dim text-center pt-4 italic font-mono border-t border-ink-700/50 mt-4">
               {isFrench ? "Glissez les cartes pour changer l'état" : "Drag card to change status"}
             </div>
           </div>
@@ -500,24 +500,24 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
             onDragOver={(e) => handleDragOver(e, "Completed")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "Completed")}
-            className={`rounded-2xl bg-slate-950/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
-              dragOverCol === "Completed" ? "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10" : "border-slate-850"
+            className={`rounded-2xl bg-ink-900/40 p-4 border transition-all min-h-[400px] flex flex-col justify-between ${
+              dragOverCol === "Completed" ? "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10" : "border-ink-700"
             }`}
           >
             <div>
-              <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-ink-700 pb-3 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <h4 className="text-sm font-black text-slate-200 uppercase tracking-wider">{isFrench ? "Terminé" : "Completed"}</h4>
+                  <h4 className="text-sm font-black text-body uppercase tracking-wider">{isFrench ? "Terminé" : "Completed"}</h4>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-slate-900 text-slate-400 px-2 py-0.5 border border-slate-800 rounded-full">
+                <span className="text-[10px] font-mono font-bold bg-ink-850 text-mist px-2 py-0.5 border border-ink-700 rounded-full">
                   {completedGoals.length}
                 </span>
               </div>
 
               <div className="space-y-3">
                 {completedGoals.length === 0 ? (
-                  <div className="text-center py-8 text-[11px] text-slate-500 italic border border-dashed border-slate-850 rounded-xl bg-slate-950/20">
+                  <div className="text-center py-8 text-[11px] text-dim italic border border-dashed border-ink-700 rounded-xl bg-ink-900/20">
                     {isFrench ? "Terminez des objectifs !" : "No goals completed yet"}
                   </div>
                 ) : (
@@ -543,7 +543,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                 )}
               </div>
             </div>
-            <div className="text-[10px] text-slate-500 text-center pt-4 italic font-mono border-t border-slate-850/50 mt-4">
+            <div className="text-[10px] text-dim text-center pt-4 italic font-mono border-t border-ink-700/50 mt-4">
               {isFrench ? "Glissez les cartes pour changer l'état" : "Drag card to change status"}
             </div>
           </div>
@@ -556,7 +556,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
         <div className="space-y-3 mt-6">
           <AnimatePresence initial={false}>
             {normalizedGoals.length === 0 ? (
-              <div className="text-center py-10 text-slate-500 text-xs italic">
+              <div className="text-center py-10 text-dim text-xs italic">
                 {isFrench 
                   ? "Aucun objectif défini actuellement."
                   : "No mentorship goals currently defined. Use the input form above to establish action targets."}
@@ -570,29 +570,29 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                   exit={{ opacity: 0, x: -10 }}
                   className={`flex items-start justify-between p-4 rounded-xl border transition-all ${
                     g.status === "Completed" || g.completed
-                      ? "bg-slate-900/30 border-slate-850 opacity-70"
-                      : "bg-slate-900/60 border-slate-700/30 hover:border-slate-700/60"
+                      ? "bg-ink-850/30 border-ink-700 opacity-70"
+                      : "bg-ink-850/60 border-ink-600/30 hover:border-ink-600/60"
                   }`}
                 >
                   <div className="flex items-start gap-4 flex-1 min-w-0 mr-4">
                     <button
                       onClick={() => handleToggleGoal(g.id)}
-                      className="text-slate-400 hover:text-indigo-400 transition shrink-0 mt-0.5 cursor-pointer"
+                      className="text-mist hover:text-indigo-400 transition shrink-0 mt-0.5 cursor-pointer"
                     >
                       {g.status === "Completed" || g.completed ? (
                         <CheckCircle2 className="w-5 h-5 text-indigo-400 fill-indigo-400/10" />
                       ) : (
-                        <Circle className="w-5 h-5 text-slate-500 hover:text-indigo-400" />
+                        <Circle className="w-5 h-5 text-dim hover:text-indigo-400" />
                       )}
                     </button>
 
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-bold leading-snug break-words ${g.status === "Completed" || g.completed ? "line-through text-slate-500" : "text-slate-200"}`}>
+                      <p className={`text-sm font-bold leading-snug break-words ${g.status === "Completed" || g.completed ? "line-through text-dim" : "text-body"}`}>
                         {g.text}
                       </p>
                       
                       {g.description && (
-                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{g.description}</p>
+                        <p className="text-xs text-mist mt-1 leading-relaxed">{g.description}</p>
                       )}
 
                       <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -604,7 +604,7 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                           {translatePriority(g.priority)}
                         </span>
                         {g.dueDate && (
-                          <span className="text-[9px] font-mono text-slate-500 flex items-center gap-1 bg-slate-950/40 px-2 py-0.5 border border-slate-850 rounded-full">
+                          <span className="text-[9px] font-mono text-dim flex items-center gap-1 bg-ink-900/40 px-2 py-0.5 border border-ink-700 rounded-full">
                             <Calendar className="w-3 h-3 text-indigo-400" />
                             <span>{g.dueDate}</span>
                           </span>
@@ -625,14 +625,14 @@ export function MentorshipGoals({ goals, onChange, selectedLanguage = "english" 
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => setExpandedGoalId(expandedGoalId === g.id ? null : g.id)}
-                      className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition"
+                      className="p-1.5 text-dim hover:text-indigo-400 hover:bg-ink-800 rounded-lg transition"
                       title="Edit advanced fields"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteGoal(g.id)}
-                      className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                      className="p-1.5 text-dim hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
                       title={isFrench ? "Supprimer l'objectif" : "Delete goal"}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -681,33 +681,33 @@ function GoalBoardCard({
     <div
       draggable
       onDragStart={(e) => onDragStart(e, goal.id)}
-      className={`bg-slate-900 border hover:border-slate-700/80 p-4 rounded-xl shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing select-none group relative ${
-        goal.status === "Completed" ? "border-slate-850/60 bg-slate-950/30 opacity-75" : "border-slate-800"
+      className={`bg-ink-850 border hover:border-ink-600/80 p-4 rounded-xl shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing select-none group relative ${
+        goal.status === "Completed" ? "border-ink-700/60 bg-ink-900/30 opacity-75" : "border-ink-700"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0 flex-1">
           <button
             onClick={() => onToggle(goal.id)}
-            className="text-slate-500 hover:text-indigo-400 transition shrink-0 mt-0.5 cursor-pointer"
+            className="text-dim hover:text-indigo-400 transition shrink-0 mt-0.5 cursor-pointer"
             title={isFrench ? "Marquer comme fait / non fait" : "Toggle completed"}
           >
             {goal.status === "Completed" || goal.completed ? (
               <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-500/10" />
             ) : (
-              <Circle className="w-4 h-4 text-slate-600 group-hover:text-slate-400" />
+              <Circle className="w-4 h-4 text-dim group-hover:text-mist" />
             )}
           </button>
           
           <div className="min-w-0">
             <h5 className={`text-xs font-bold leading-relaxed break-words ${
-              goal.status === "Completed" || goal.completed ? "line-through text-slate-500" : "text-slate-200"
+              goal.status === "Completed" || goal.completed ? "line-through text-dim" : "text-body"
             }`}>
               {goal.text}
             </h5>
             
             {goal.description && !expanded && (
-              <p className="text-[10px] text-slate-400 mt-1 truncate max-w-[200px]">
+              <p className="text-[10px] text-mist mt-1 truncate max-w-[200px]">
                 {goal.description}
               </p>
             )}
@@ -716,7 +716,7 @@ function GoalBoardCard({
 
         <button
           onClick={() => onDelete(goal.id)}
-          className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition shrink-0 cursor-pointer"
+          className="opacity-0 group-hover:opacity-100 p-1 text-dim hover:text-red-400 hover:bg-red-500/10 rounded transition shrink-0 cursor-pointer"
           title="Delete"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -724,7 +724,7 @@ function GoalBoardCard({
       </div>
 
       {/* Badges strip */}
-      <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-850/60">
+      <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-ink-700/60">
         <span className="shrink-0">{getCategoryIcon(goal.category)}</span>
         <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 border rounded ${getCategoryColor(goal.category)}`}>
           {translateCategory(goal.category)}
@@ -733,7 +733,7 @@ function GoalBoardCard({
           {translatePriority(goal.priority || "Medium")}
         </span>
         {goal.dueDate && (
-          <span className="text-[8px] font-mono text-slate-400 flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 border border-slate-850 rounded">
+          <span className="text-[8px] font-mono text-mist flex items-center gap-1 bg-ink-900 px-1.5 py-0.5 border border-ink-700 rounded">
             <Calendar className="w-2.5 h-2.5 text-indigo-400" />
             <span>{goal.dueDate}</span>
           </span>
@@ -741,30 +741,30 @@ function GoalBoardCard({
       </div>
 
       {/* Mobile-friendly shift buttons & Advanced Toggle */}
-      <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-850/40">
+      <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-ink-700/40">
         <button
           onClick={onToggleExpand}
-          className="text-[9px] font-mono font-bold text-slate-400 hover:text-white flex items-center gap-0.5"
+          className="text-[9px] font-mono font-bold text-mist hover:text-chalk flex items-center gap-0.5"
         >
           <span>{expanded ? (isFrench ? "Fermer" : "Collapse") : (isFrench ? "Détails" : "Details")}</span>
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
 
         {/* Quick shifts for mobile where drag and drop might not be optimal */}
-        <div className="flex gap-1 items-center bg-slate-950 px-1.5 py-0.5 border border-slate-850 rounded-lg">
+        <div className="flex gap-1 items-center bg-ink-900 px-1.5 py-0.5 border border-ink-700 rounded-lg">
           {goal.status !== "Planned" && (
             <button
               onClick={() => {
                 const prevStatus = goal.status === "Completed" ? "In Progress" : "Planned";
                 onUpdateStatus(goal.id, prevStatus);
               }}
-              className="p-1 text-slate-400 hover:text-indigo-400"
+              className="p-1 text-mist hover:text-indigo-400"
               title="Move left"
             >
               <ArrowLeft className="w-3 h-3" />
             </button>
           )}
-          <span className="text-[8px] font-mono font-bold text-slate-500 uppercase px-1">
+          <span className="text-[8px] font-mono font-bold text-dim uppercase px-1">
             {isFrench ? "État" : "Move"}
           </span>
           {goal.status !== "Completed" && (
@@ -773,7 +773,7 @@ function GoalBoardCard({
                 const nextStatus = goal.status === "Planned" ? "In Progress" : "Completed";
                 onUpdateStatus(goal.id, nextStatus);
               }}
-              className="p-1 text-slate-400 hover:text-indigo-400"
+              className="p-1 text-mist hover:text-indigo-400"
               title="Move right"
             >
               <ArrowRight className="w-3 h-3" />
@@ -787,37 +787,37 @@ function GoalBoardCard({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="mt-3 pt-3 border-t border-slate-850 space-y-3"
+          className="mt-3 pt-3 border-t border-ink-700 space-y-3"
         >
           {/* Change description notes */}
           <div>
-            <label className="block text-[8px] uppercase font-bold text-slate-400 mb-1">{isFrench ? "Notes additionnelles" : "Goal Notes / Actions"}</label>
+            <label className="block text-[8px] uppercase font-bold text-mist mb-1">{isFrench ? "Notes additionnelles" : "Goal Notes / Actions"}</label>
             <textarea
               rows={2}
               value={goal.description || ""}
               onChange={(e) => onEditField(goal.id, "description", e.target.value)}
               placeholder={isFrench ? "Saisir des notes..." : "Add Study links, mentors or targets..."}
-              className="w-full bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[10px] text-slate-300 focus:outline-none focus:border-indigo-500 resize-none"
+              className="w-full bg-ink-900 border border-ink-700 rounded px-2 py-1 text-[10px] text-body focus:outline-none focus:border-indigo-500 resize-none"
             />
           </div>
 
           {/* Change due date */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[8px] uppercase font-bold text-slate-400 mb-1">{isFrench ? "Échéance" : "Due Date"}</label>
+              <label className="block text-[8px] uppercase font-bold text-mist mb-1">{isFrench ? "Échéance" : "Due Date"}</label>
               <input
                 type="date"
                 value={goal.dueDate || ""}
                 onChange={(e) => onEditField(goal.id, "dueDate", e.target.value)}
-                className="w-full bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[9px] text-slate-300 font-mono focus:outline-none"
+                className="w-full bg-ink-900 border border-ink-700 rounded px-2 py-1 text-[9px] text-body font-mono focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-[8px] uppercase font-bold text-slate-400 mb-1">{isFrench ? "Priorité" : "Priority"}</label>
+              <label className="block text-[8px] uppercase font-bold text-mist mb-1">{isFrench ? "Priorité" : "Priority"}</label>
               <select
                 value={goal.priority || "Medium"}
                 onChange={(e) => onEditField(goal.id, "priority", e.target.value)}
-                className="w-full bg-slate-950 border border-slate-850 rounded px-1.5 py-1 text-[9px] text-slate-300 focus:outline-none"
+                className="w-full bg-ink-900 border border-ink-700 rounded px-1.5 py-1 text-[9px] text-body focus:outline-none"
               >
                 <option value="High">{isFrench ? "Élevée" : "High"}</option>
                 <option value="Medium">{isFrench ? "Moyenne" : "Medium"}</option>

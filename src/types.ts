@@ -56,9 +56,23 @@ export interface CareerTrack {
   category: string;
   sector: string;
   matchScore: number; // e.g. 9.4
+  /** Catalogue occupation this track was matched from. */
+  occupationId?: string;
+  /** Calculated match, 0–100. */
+  matchPercent?: number;
+  /** Plain-language reasons for the match, in the report language. */
+  matchReasons?: string[];
+  /** Things that make this path harder for the person (training length, prerequisites). */
+  matchNotes?: string[];
   description: string;
-  demandLevel: "Exponential" | "High Growth" | "Emerging";
+  demandLevel: string;
   salaryTimeline: SalaryMilestone[];
+  /** Salaries are AI estimates, not survey data. */
+  salaryIsEstimate?: boolean;
+  /** Currency code of the salary figures, e.g. "CDF" or "USD". */
+  salaryCurrency?: string;
+  /** Pay period of the salary figures. */
+  salaryPeriod?: "month" | "year";
   skillsPredicted: SkillGrowth[];
   certificationRoadmap: Certification[];
   educationalResources: EducationResource[];
@@ -67,17 +81,17 @@ export interface CareerTrack {
   longTermTimeline: string[];
 }
 
-export interface AssessmentAnswers {
-  answers: Record<string, string>; // questionId -> optionId
-  selectedSectors: string[]; // sector IDs
-}
-
 export interface CareerReport {
   id: string;
   createdAt: string;
-  answers: AssessmentAnswers;
+  answers: import("./career/assessment").AssessmentAnswers;
+  profile: import("./career/engine").CareerProfile;
+  /** Short personalised summary of strengths, in the report language. */
+  summary?: string;
   recommendedTracks: CareerTrack[];
   mentorGoals: MentorGoal[];
+  country?: string;
+  language?: "english" | "french";
   note?: string;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "ProPath",
-  "description": "An immersive, high-fidelity vocational intelligence platform designed to bridge the gap between personal aptitude and real-world professional demand using Adaptive Scenario Assessment, Career Alignment dashboards, execution roadmaps, mentorship tools, and educational launchpads.",
+  "description": "Career guidance platform that matches people to real work using an interest and skills assessment, tracks their progress through roadmaps and courses, and helps members plan and launch projects.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

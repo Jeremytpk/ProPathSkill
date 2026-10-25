@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAccount } from "../lib/account";
 import { 
   Megaphone, Sparkles, ArrowLeft, ArrowRight, Loader2, BookOpen, 
   Target, Zap, Flame, Award, Lightbulb, Play, RefreshCw, Layers, CheckCircle2
@@ -21,6 +22,7 @@ const PRESET_TOPICS = [
 ];
 
 export function DigitalMarketingCourseHub({ onBack, language = "english", theme = "dark" }: DigitalMarketingCourseHubProps) {
+  const { authedFetch } = useAccount();
   const isFrench = language.toLowerCase() === "french";
   const isDark = theme === "dark";
 
@@ -31,7 +33,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
   // Selected course to view in workspace
   const [activeCourse, setActiveCourse] = useState<{ id: string; data?: any } | null>(null);
 
-  // Function to request Gemini AI course generation
+  // Request a course from ProPath AI
   const handleGenerateCourse = async (topicToUse?: string) => {
     const title = topicToUse || customTopic.trim();
     if (!title) return;
@@ -40,7 +42,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
     setGenerateError(null);
 
     try {
-      const response = await fetch("/api/generate-course-content", {
+      const response = await authedFetch("/api/generate-course-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -51,13 +53,13 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate course with Gemini AI");
+        throw new Error("Course generation failed");
       }
 
       const data = await response.json();
       if (data && data.title && data.chapters) {
         const fullCourse = {
-          id: `gemini_dm_${Date.now()}`,
+          id: `gen_dm_${Date.now()}`,
           ...data
         };
         setActiveCourse({ id: fullCourse.id, data: fullCourse });
@@ -65,13 +67,13 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
         throw new Error("Invalid course payload returned");
       }
     } catch (err: any) {
-      console.warn("Gemini generation fallback engaged:", err);
+      console.warn("Course generation unavailable, using built-in course:", err);
       // Fallback: create a structured digital marketing course directly
       const fallbackCourse = {
-        id: `gemini_dm_${Date.now()}`,
+        id: `gen_dm_${Date.now()}`,
         title: title.startsWith("Digital Marketing") ? title : `Digital Marketing: ${title}`,
         industry: "Digital Marketing & Growth Strategy",
-        aiTutorPersona: isFrench ? "Sophie Laurent (Directrice Marketing Digital & Growth)" : "Sophie Laurent (Digital Marketing & Growth Director)",
+        aiTutorPersona: isFrench ? "Tuteur ProPath" : "ProPath Tutor",
         chapters: [
           {
             id: "ch1",
@@ -148,7 +150,7 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
     }
   };
 
-  // Pre-built Gemini Digital Marketing courses
+  // Pre-built Digital Marketing courses
   const featuredCourses = [
     {
       id: "digital_marketing_native",
@@ -162,10 +164,10 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
     {
       id: "ai_growth_copywriting",
       badge: isFrench ? "Spécialisation IA" : "AI Specialization",
-      title: isFrench ? "Growth Marketing & Copywriting Gemini IA" : "AI Growth Marketing & Copywriting with Gemini",
+      title: isFrench ? "Growth Marketing & Rédaction avec l'IA" : "AI Growth Marketing & Copywriting",
       description: isFrench 
-        ? "Apprenez à rédiger des scripts viraux, des emails à fort taux d'ouverture et des accroches avec Gemini AI."
-        : "Learn to engineer high-converting sales scripts, email sequences, and ad copy using Gemini AI prompts.",
+        ? "Apprenez à rédiger des scripts viraux, des emails à fort taux d'ouverture et des accroches avec des outils d'IA."
+        : "Learn to engineer high-converting sales scripts, email sequences, and ad copy using AI writing tools.",
       topics: isFrench ? ["Ingénierie de Prompt", "Scripts Vidéo TikTok/Reels", "Copywriting Persuasif"] : ["Prompt Engineering", "TikTok/Reels Scripts", "Persuasive Copywriting"]
     },
     {
@@ -173,8 +175,8 @@ export function DigitalMarketingCourseHub({ onBack, language = "english", theme 
       badge: isFrench ? "Référencement & IA" : "SEO & AI Optimization",
       title: isFrench ? "SEO Technique, Moteurs IA (AEO) & Contenu" : "Technical SEO, Answer Engines (AEO) & Content",
       description: isFrench 
-        ? "Dominations des résultats Google et citation par les moteurs d'intelligence artificielle comme Gemini et Perplexity."
-        : "Dominate Google search rankings and get cited by AI answer engines like Gemini and Search GPT.",
+        ? "Dominations des résultats Google et citation par les moteurs d'intelligence artificielle comme ChatGPT et Perplexity."
+        : "Dominate Google search rankings and get cited by AI answer engines like ChatGPT and Perplexity.",
       topics: isFrench ? ["Données Structurées", "Recherche Mots-clés IA", "Autorité Sémantique"] : ["Schema Markup", "AI Keyword Intent", "Topical Authority"]
     },
     {

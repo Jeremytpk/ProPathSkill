@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getAICourse } from "../lib/firebase";
+import { useAccount } from "../lib/account";
+import { ExamPaywall } from "./Plans";
 import { 
   BookOpen, Send, CheckCircle2, XCircle, Award, Sparkles, 
   ChevronRight, GraduationCap, X, MessageSquare, Loader2, RefreshCw,
@@ -383,13 +385,62 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
   const isFrench = language.toLowerCase() === "french";
   const isDark = theme === "dark";
 
-  const [course, setCourse] = useState<any | null>(initialCourseData || null);
-  const [loading, setLoading] = useState(!initialCourseData);
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
-  
+  // Progress is restored from and saved to the learner's account automatically.
+  const { progress, updateProgress, entitlements, authedFetch } = useAccount();
+  const [showExamPaywall, setShowExamPaywall] = useState(false);
+  const saved = progress.courses[courseId];
+  const startingCourse = initialCourseData || saved?.course || null;
+
+  const [course, setCourse] = useState<any | null>(startingCourse);
+  const [loading, setLoading] = useState(!startingCourse);
+  const [activeChapterIndex, setActiveChapterIndex] = useState(saved?.lastChapter ?? 0);
+
   // Quiz states (for each chapter index)
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [submittedAnswers, setSubmittedAnswers] = useState<Record<number, boolean>>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(() =>
+    Object.fromEntries(Object.entries(saved?.answers || {}).map(([k, v]) => [Number(k), v]))
+  );
+  const [submittedAnswers, setSubmittedAnswers] = useState<Record<number, boolean>>(() =>
+    Object.fromEntries(Object.keys(saved?.answers || {}).map((k) => [Number(k), true]))
+  );
+
+  const lastSavedSignature = useRef("");
+  useEffect(() => {
+    const chapters: any[] = course?.chapters || [];
+    if (!chapters.length) return;
+    const answers: Record<string, number> = {};
+    const passed: number[] = [];
+    chapters.forEach((chap, idx) => {
+      if (!submittedAnswers[idx] || selectedAnswers[idx] === undefined) return;
+      answers[String(idx)] = selectedAnswers[idx];
+      const correct = typeof chap?.quiz?.correctIndex === "number" ? chap.quiz.correctIndex : chap?.quiz?.correctAnswer ?? 0;
+      if (selectedAnswers[idx] === correct) passed.push(idx);
+    });
+    const signature = JSON.stringify([activeChapterIndex, answers]);
+    if (signature === lastSavedSignature.current) return;
+    lastSavedSignature.current = signature;
+    // Generated courses exist nowhere else, so keep a copy to reopen them later.
+    const keepCopy = Boolean(initialCourseData) || courseId.startsWith("gen_");
+    updateProgress((p) => {
+      const prev = p.courses[courseId];
+      const complete = passed.length === chapters.length;
+      return {
+        ...p,
+        courses: {
+          ...p.courses,
+          [courseId]: {
+            title: course.title,
+            startedAt: prev?.startedAt || new Date().toISOString(),
+            lastChapter: activeChapterIndex,
+            answers,
+            passed,
+            totalChapters: chapters.length,
+            completedAt: complete ? prev?.completedAt || new Date().toISOString() : undefined,
+            ...(keepCopy ? { course } : {}),
+          },
+        },
+      };
+    });
+  }, [course, activeChapterIndex, submittedAnswers, selectedAnswers]);
 
   // Mini Quiz states (keyed by `${chapterIndex}_mini_${secIdx}`)
   const [miniQuizSelected, setMiniQuizSelected] = useState<Record<string, number>>({});
@@ -450,7 +501,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
     studentId: "",
     courseTitle: "",
     issueDate: "",
-    boardPresident: "Dr. Marcus Vance",
+    boardPresident: "ProPath Learning School",
     boardPresidentTitle: "",
     facultyMentor: "",
     facultyMentorTitle: "",
@@ -465,9 +516,9 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
       studentId: prev.studentId || studentInfo.studentId || `PPS-${Math.floor(100000 + Math.random() * 900000)}`,
       courseTitle: prev.courseTitle || course?.title || "",
       issueDate: prev.issueDate || new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
-      boardPresident: prev.boardPresident || "Dr. Marcus Vance",
+      boardPresident: prev.boardPresident || "ProPath Learning School",
       boardPresidentTitle: prev.boardPresidentTitle || (isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President"),
-      facultyMentor: prev.facultyMentor || course?.aiTutorPersona || "Sophie Laurent",
+      facultyMentor: prev.facultyMentor || course?.aiTutorPersona || (isFrench ? "Tuteur ProPath" : "ProPath Tutor"),
       facultyMentorTitle: prev.facultyMentorTitle || (isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor"),
       citationText: prev.citationText || (isFrench 
         ? "En reconnaissance de la validation intégrale des modules de formation, des examens théoriques, des études de cas pratiques et de la maîtrise professionnelle démontrée dans le programme :" 
@@ -483,9 +534,9 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
       studentId: `PPS-${Math.floor(100000 + Math.random() * 900000)}`,
       courseTitle: course?.title || "",
       issueDate: new Date().toLocaleDateString(isFrench ? "fr-FR" : "en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
-      boardPresident: "Dr. Marcus Vance",
+      boardPresident: "ProPath Learning School",
       boardPresidentTitle: isFrench ? "Président du Conseil Académique" : "ProPath Academic Board President",
-      facultyMentor: course?.aiTutorPersona || "Sophie Laurent",
+      facultyMentor: course?.aiTutorPersona || (isFrench ? "Tuteur ProPath" : "ProPath Tutor"),
       facultyMentorTitle: isFrench ? "Mentor Pédagogique Qualifié" : "Certified Faculty AI Mentor",
       citationText: isFrench 
         ? "En reconnaissance de la validation intégrale des modules de formation, des examens théoriques, des études de cas pratiques et de la maîtrise professionnelle démontrée dans le programme :" 
@@ -499,6 +550,11 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
   };
 
   const handleClaimCertificateClick = () => {
+    // The exam and certificate of ProPath AI courses are paid.
+    if (!entitlements.has(`exam_${courseId}`)) {
+      setShowExamPaywall(true);
+      return;
+    }
     if (!studentInfo.fullName || !studentInfo.fullName.trim()) {
       setShowStudentInfoModal(true);
     } else {
@@ -520,15 +576,16 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
 
   useEffect(() => {
     async function loadCourse() {
-      if (initialCourseData) {
-        setCourse(initialCourseData);
+      const preset = initialCourseData || saved?.course;
+      if (preset) {
+        setCourse(preset);
         setChatMessages([
           {
             id: "msg_welcome",
             sender: "tutor",
-            text: isFrench 
-              ? `Bonjour ! Je suis ${initialCourseData.aiTutorPersona || "votre mentor de cours"}. Bienvenue dans le cours "${initialCourseData.title}". Je suis là pour vous aider à comprendre chaque chapitre et répondre à vos questions en temps réel. Quel sujet souhaitez-vous aborder en premier ?`
-              : `Hello! I am ${initialCourseData.aiTutorPersona || "your course mentor"}. Welcome to the "${initialCourseData.title}" course. I am here to help you understand each chapter and answer your questions in real-time. What topic would you like to discuss first?`,
+            text: isFrench
+              ? `Bonjour ! Je suis ${preset.aiTutorPersona || "votre tuteur"}. Bienvenue dans le cours "${preset.title}". Posez-moi vos questions sur chaque chapitre.`
+              : `Hello! I'm ${preset.aiTutorPersona || "your tutor"}. Welcome to "${preset.title}". Ask me anything about each chapter.`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -695,15 +752,19 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
     setSendingQuestion(true);
 
     try {
-      const response = await fetch("/api/ask-tutor", {
+      const response = await authedFetch("/api/ask-tutor", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: userMsgText,
           courseContext: {
             courseTitle: course.title,
             currentChapterTitle: activeChapter?.title,
-            currentChapterContent: activeChapter?.content
+            currentChapterContent: [
+              activeChapter?.summary,
+              ...(activeChapter?.sections || []).map((s: any) =>
+                [s.title, s.content, ...(s.keyPoints || [])].filter(Boolean).join("\n")
+              ),
+            ].filter(Boolean).join("\n\n")
           },
           tutorPersona: course.aiTutorPersona || "Socrates",
           chatHistory: chatMessages.slice(-5), // Send last 5 messages for conversation context
@@ -741,6 +802,13 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col md:flex-row overflow-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
+      <ExamPaywall
+        open={showExamPaywall}
+        onClose={() => setShowExamPaywall(false)}
+        courseId={courseId}
+        courseTitle={course.title}
+        language={isFrench ? "french" : "english"}
+      />
       {/* LEFT CONTENT AREA: Lesson text & Chapter Quizzes */}
       <div 
         id="lesson-content-scroll"
@@ -833,19 +901,6 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
             </span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={handleOpenAdminCertEditor}
-              className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
-                isDark
-                  ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20"
-                  : "bg-indigo-50 border-indigo-200 text-indigo-900 hover:bg-indigo-100 shadow-xs"
-              }`}
-              title={isFrench ? "Éditer le certificat en mode Administrateur" : "Admin: Edit Certificate Details"}
-            >
-              <Sliders className="w-3.5 h-3.5 text-indigo-500" />
-              <span>{isFrench ? "Admin: Éditer Certificat" : "Admin: Edit Certificate"}</span>
-            </button>
-
             {isCourseComplete ? (
               <button
                 onClick={handleClaimCertificateClick}
@@ -1440,7 +1495,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                 </div>
                 <div>
                   <h3 className={`text-xs font-black font-display truncate max-w-[190px] ${isDark ? "text-white" : "text-slate-900"}`}>
-                    {course.aiTutorPersona || (isFrench ? "Sophie Laurent (Directrice Marketing)" : "Faculty Mentor Socrates")}
+                    {course.aiTutorPersona || (isFrench ? "Tuteur ProPath" : "ProPath Tutor")}
                   </h3>
                   <span className={`text-[10px] font-mono block ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                     {isFrench ? "• En ligne (Mentor)" : "• Online (Course Mentor)"}
@@ -1920,7 +1975,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                   {/* Left Signature */}
                   <div className="text-center sm:text-left space-y-1">
                     <div className="font-serif italic text-amber-900 text-lg font-bold tracking-wide">
-                      {certCustomData.boardPresident || "Dr. Marcus Vance"}
+                      {certCustomData.boardPresident || "ProPath Learning School"}
                     </div>
                     <div className="h-[1px] w-32 bg-slate-300 mx-auto sm:mx-0 my-1" />
                     <span className="text-[9px] font-mono text-slate-500 block uppercase font-bold">
@@ -1941,7 +1996,7 @@ export function AICourseWorkspace({ courseId, initialCourseData, onClose, langua
                   {/* Right Signature */}
                   <div className="text-center sm:text-right space-y-1">
                     <div className="font-serif italic text-indigo-950 text-lg font-bold tracking-wide">
-                      {certCustomData.facultyMentor || course.aiTutorPersona || "Sophie Laurent"}
+                      {certCustomData.facultyMentor || course.aiTutorPersona || (isFrench ? "Tuteur ProPath" : "ProPath Tutor")}
                     </div>
                     <div className="h-[1px] w-32 bg-slate-300 mx-auto sm:mx-0 sm:ml-auto my-1" />
                     <span className="text-[9px] font-mono text-slate-500 block uppercase font-bold">
@@ -2012,7 +2067,7 @@ function getBuiltInCourse(courseId: string, isFrench: boolean): any {
         ? "ProPath Académie - Marketing Digital & Stratégie Médias Sociaux" 
         : "ProPath Academy - Digital Marketing & Social Media Strategy Masterclass",
       industry: "Digital Marketing & Growth",
-      aiTutorPersona: isFrench ? "Sophie Laurent (Directrice Marketing Digital & Growth)" : "Sophie Laurent (Digital Marketing & Growth Director)",
+      aiTutorPersona: isFrench ? "Tuteur ProPath" : "ProPath Tutor",
       chapters: [
         {
           id: "ch1",
@@ -2823,7 +2878,7 @@ function getBuiltInCourse(courseId: string, isFrench: boolean): any {
       id: "smartgrid_native",
       title: isFrench ? "ProPath École d'Apprentissage - Énergie Propre & Réseaux Intelligents" : "ProPath Learning School - Smart Grid & Clean Energy",
       industry: "Clean Energy & Smart Grids",
-      aiTutorPersona: "Dr. Marcus Vance (Smart Grid Architect)",
+      aiTutorPersona: isFrench ? "Tuteur ProPath" : "ProPath Tutor",
       chapters: [
         {
           id: "ch1",
