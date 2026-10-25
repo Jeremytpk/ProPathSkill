@@ -2,7 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from "express"
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { adminDb, getRequestUser, requireAccount, requireAdmin } from "./auth";
-import { SKILL_IDS } from "../src/career/skills";
+import { getSkill, SKILL_IDS } from "../src/career/skills";
 import {
   chapterEntitlement, fullEntitlement, MAX_PRICE, MIN_CHAPTERS, MIN_FREE_CHAPTERS, MIN_PRICE,
   type TutorChapterContent, type TutorCourse, type TutorProfile,
@@ -90,6 +90,7 @@ tutorsRouter.post("/api/tutor/apply", requireAccount, handle(async (req, res) =>
     createdAt: existing.get("createdAt") || now(),
     updatedAt: now(),
   }, { merge: true });
+  if (status === "approved") await syncPartnerListing(req.user!.uid);
   res.json({ ok: true, status: status === "approved" ? "approved" : "pending" });
 }));
 
@@ -260,6 +261,41 @@ tutorsRouter.get("/api/market/courses/:id/chapters/:index", handle(async (req, r
   res.json({ chapter: content.data() });
 }));
 
+// Partners list -------------------------------------------------------------
+
+/** Country names as the partner directory stores them. */
+function partnerCountry(country: string) {
+  const c = country.toLowerCase();
+  if (c.includes("congo") || c === "rdc" || c === "drc") return "DRCongo";
+  if (c.includes("ivoire") || c.includes("ivory")) return "Ivory Coast";
+  if (c.includes("sénégal") || c.includes("senegal")) return "Senegal";
+  return country;
+}
+
+/** Approved tutors appear in the partner directory; anyone else is removed from it. */
+export async function syncPartnerListing(uid: string) {
+  const tutorSnap = await db().collection("tutors").doc(uid).get();
+  const partnerRef = db().collection("partners").doc(`tutor_${uid}`);
+  const t = tutorSnap.data() as TutorProfile | undefined;
+  if (!t || t.status !== "approved") {
+    await partnerRef.delete();
+    return;
+  }
+  await partnerRef.set({
+    id: partnerRef.id,
+    name: t.displayName,
+    description: t.bio,
+    industry: t.skills.map((k) => getSkill(k)?.label.en || k).join(", "),
+    location: t.city,
+    country: partnerCountry(t.country),
+    website: "",
+    source: "tutor",
+    tutorId: uid,
+    tutorType: t.type,
+    createdAt: t.approvedAt || now(),
+  }, { merge: true });
+}
+
 // Admin: tutor and course review --------------------------------------------
 
 tutorsRouter.get("/api/admin/tutors", requireAdmin, handle(async (req, res) => {
@@ -279,6 +315,7 @@ tutorsRouter.post("/api/admin/tutors/:uid", requireAdmin, handle(async (req, res
     ...(status === "approved" ? { approvedAt: now() } : {}),
     updatedAt: now(),
   });
+  await syncPartnerListing(String(req.params.uid));
   // A suspended tutor's courses come off the catalogue.
   if (status === "suspended") {
     const courses = await db().collection("tutor_courses").where("tutorId", "==", req.params.uid).where("status", "==", "approved").get();

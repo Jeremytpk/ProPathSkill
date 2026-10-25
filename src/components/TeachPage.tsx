@@ -416,6 +416,27 @@ function CourseEditor({ courseId, profile, language, onDone }: { courseId: strin
   const st = STATUS_LABELS[status];
   const paidCount = Math.max(0, chapters.length - Number(meta.freeChapters));
 
+  // Everything ProPath needs before a course can go to review, shown as a live checklist.
+  const shortChapters = chapters.map((c, i) => (c.body.trim().length < 100 ? i + 1 : 0)).filter(Boolean);
+  const untitled = chapters.map((c, i) => (c.title.trim().length < 2 ? i + 1 : 0)).filter(Boolean);
+  const checklist = [
+    { ok: meta.title.trim().length >= 5, label: fr ? "Un titre (5 caractères min.)" : "A title (5+ characters)" },
+    { ok: meta.description.trim().length >= 20, label: fr ? "Une description (20 caractères min.)" : "A description (20+ characters)" },
+    { ok: meta.skills.length > 0, label: fr ? "Au moins une compétence" : "At least one skill" },
+    { ok: chapters.length >= MIN_CHAPTERS, label: fr ? `Au moins ${MIN_CHAPTERS} chapitres (vous en avez ${chapters.length})` : `At least ${MIN_CHAPTERS} chapters (you have ${chapters.length})` },
+    { ok: Number(meta.freeChapters) >= MIN_FREE_CHAPTERS && paidCount >= 1, label: fr ? `${MIN_FREE_CHAPTERS} chapitres gratuits minimum et au moins 1 chapitre payant` : `At least ${MIN_FREE_CHAPTERS} free chapters and at least 1 paid chapter` },
+    {
+      ok: untitled.length === 0,
+      label: untitled.length ? (fr ? `Un titre pour chaque chapitre (manquant : ${untitled.join(", ")})` : `A title for every chapter (missing: ${untitled.join(", ")})`) : (fr ? "Un titre pour chaque chapitre" : "A title for every chapter"),
+    },
+    {
+      ok: shortChapters.length === 0,
+      label: shortChapters.length ? (fr ? `Au moins 100 caractères de contenu par chapitre (à compléter : ${shortChapters.join(", ")})` : `At least 100 characters of content per chapter (to complete: ${shortChapters.join(", ")})`) : (fr ? "Au moins 100 caractères de contenu par chapitre" : "At least 100 characters of content per chapter"),
+    },
+    { ok: [meta.chapterPrice, meta.coursePrice].every((p) => Number(p) >= MIN_PRICE), label: fr ? `Prix d'au moins ${MIN_PRICE} $` : `Prices of at least $${MIN_PRICE}` },
+  ];
+  const ready = checklist.every((c) => c.ok);
+
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
       <button type="button" onClick={onDone} className="self-start inline-flex items-center gap-2 text-sm text-mist hover:text-chalk min-h-[44px]">
@@ -546,10 +567,45 @@ function CourseEditor({ courseId, profile, language, onDone }: { courseId: strin
         </button>
       </section>
 
-      {message && <p className={`text-sm ${message.ok ? "text-path-text" : "text-danger-text"}`} role="status">{message.text}</p>}
+      <section className="pp-card p-5 flex flex-col gap-3" aria-labelledby="ready-h">
+        <h2 id="ready-h" className="font-display text-lg font-semibold">
+          {status === "pending_review"
+            ? (fr ? "En vérification par ProPath" : "In review by ProPath")
+            : status === "approved"
+              ? (fr ? "Publié" : "Published")
+              : (fr ? "Avant de publier" : "Before you publish")}
+        </h2>
+        {status === "pending_review" ? (
+          <p className="text-body text-[15px]">
+            {fr
+              ? "Votre cours est envoyé. Il apparaîtra aux élèves dès que l'équipe ProPath l'aura approuvé."
+              : "Your course is submitted. It appears to learners as soon as the ProPath team approves it."}
+          </p>
+        ) : (
+          <>
+            <ul className="flex flex-col gap-2">
+              {checklist.map((c) => (
+                <li key={c.label} className={`flex gap-2 text-[15px] ${c.ok ? "text-body" : "text-gold-text"}`}>
+                  <span aria-hidden="true" className={c.ok ? "text-path" : ""}>{c.ok ? "✓" : "○"}</span>
+                  <span><span className="sr-only">{c.ok ? (fr ? "Fait : " : "Done: ") : (fr ? "À faire : " : "To do: ")}</span>{c.label}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-mist">
+              {fr
+                ? "Vous pouvez enregistrer un brouillon à tout moment. Une fois envoyé, le cours est vérifié par ProPath avant d'être visible."
+                : "You can save a draft at any time. Once submitted, ProPath reviews the course before learners can see it."}
+            </p>
+          </>
+        )}
+      </section>
+
+      {message && <p className={`text-sm rounded-xl px-3 py-2 ${message.ok ? "bg-path-soft text-path-text" : "bg-danger-soft text-danger-text"}`} role="status">{message.text}</p>}
       <div className="flex flex-wrap gap-3 sticky bottom-0 py-4 bg-ink-900 border-t border-ink-800">
         <button type="button" className="pp-btn pp-btn-secondary" disabled={busy} onClick={() => run(false)}>{busy && <Spinner />}{fr ? "Enregistrer le brouillon" : "Save draft"}</button>
-        <button type="button" className="pp-btn pp-btn-primary" disabled={busy} onClick={() => run(true)}><Send className="w-4 h-4" aria-hidden="true" />{fr ? "Envoyer pour publication" : "Submit for publishing"}</button>
+        <button type="button" className="pp-btn pp-btn-primary" disabled={busy || !ready || status === "pending_review"} onClick={() => run(true)}>
+          <Send className="w-4 h-4" aria-hidden="true" />{status === "approved" ? (fr ? "Envoyer les modifications" : "Submit changes") : (fr ? "Envoyer pour publication" : "Submit for publishing")}
+        </button>
         {id && <button type="button" className="pp-btn text-dim hover:text-danger-text ml-auto" onClick={remove}><Trash2 className="w-4 h-4" aria-hidden="true" />{fr ? "Supprimer" : "Delete"}</button>}
       </div>
 
