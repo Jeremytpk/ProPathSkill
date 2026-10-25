@@ -120,19 +120,44 @@ export function requirePlan(minimum: "basic" | "pro") {
   };
 }
 
-/** Admin accounts: emails listed in PROPATH_ADMIN_EMAILS (comma-separated). */
-export function isAdminEmail(email?: string) {
-  const admins = (process.env.PROPATH_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-  return Boolean(email && admins.includes(email.toLowerCase()));
+/** An admin is an account whose `users` document has `role: "admin"`, set by hand in Firebase. */
+export async function isAdminUser(uid: string): Promise<boolean> {
+  if (!adminDb) return false;
+  const snap = await adminDb.collection("users").doc(uid).get();
+  return snap.get("role") === "admin";
 }
 
-/** Admins sign in with an admin account, or (as a backup) send the PROPATH_ADMIN_KEY header. */
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const expected = process.env.PROPATH_ADMIN_KEY;
-  if (expected && req.headers["x-admin-key"] === expected) return next();
   const user = req.user ?? (await getRequestUser(req));
-  if (user && !user.anonymous && isAdminEmail(user.email)) return next();
+  if (user && !user.anonymous && (await isAdminUser(user.uid))) {
+    req.user = user;
+    return next();
+  }
   return res.status(401).json({ error: "admin_required" });
+}
+
+/**
+ * Every account gets a document in `users`. Called by the app after sign-up and sign-in;
+ * creates the record if needed and never changes a role set in Firebase.
+ */
+export async function ensureUserRecord(user: RequestUser) {
+  if (!adminDb) return null;
+  const ref = adminDb.collection("users").doc(user.uid);
+  return adminDb.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const now = new Date().toISOString();
+    if (!snap.exists) {
+      tx.set(ref, { email: user.email || "", role: "user", createdAt: now, lastLoginAt: now });
+      return "user";
+    }
+    tx.set(ref, {
+      email: user.email || snap.get("email") || "",
+      lastLoginAt: now,
+      ...(snap.get("role") ? {} : { role: "user" }),
+      ...(snap.get("createdAt") ? {} : { createdAt: now }),
+    }, { merge: true });
+    return snap.get("role") || "user";
+  });
 }
 
 const buckets = new Map<string, { count: number; resetAt: number }>();

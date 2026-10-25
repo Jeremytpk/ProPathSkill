@@ -21,7 +21,7 @@ export function createApp() {
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
       res.setHeader("Vary", "Origin");
-      res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, x-admin-key");
+      res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
       res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
       res.setHeader("Access-Control-Max-Age", "86400");
     }

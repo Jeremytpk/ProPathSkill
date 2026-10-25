@@ -16,12 +16,13 @@ service cloud.firestore {
       return sub.get('expiresAtMs', 0) > request.time.toMillis() && sub.get('plan', 'free') in plans;
     }
 
-    // User accounts (email or Google sign-in).
+    // User accounts (email and password). `role` (admin) is set by hand in the Firebase console
+    // and `subscription` by the server; users can never set or change either.
     match /users/{uid} {
       allow read: if isOwner(uid);
-      allow create: if isOwner(uid) && !request.resource.data.keys().hasAny(['subscription']);
+      allow create: if isOwner(uid) && !request.resource.data.keys().hasAny(['subscription', 'role']);
       allow update: if isOwner(uid)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription']);
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription', 'role']);
       allow delete: if false;
 
       // Progress is kept in the cloud only with a paid plan; free users keep it on their device.

@@ -43,7 +43,6 @@ export async function enqueueSlowRequests(req: Request, res: Response, next: Nex
       headers: {
         "content-type": "application/json",
         ...(req.headers.authorization ? { authorization: req.headers.authorization } : {}),
-        ...(req.headers["x-admin-key"] ? { "x-admin-key": String(req.headers["x-admin-key"]) } : {}),
         // Keeps per-visitor rate limits working inside the worker.
         "x-forwarded-for": req.ip || "",
       },

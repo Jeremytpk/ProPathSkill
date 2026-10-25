@@ -1,8 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   getAuth, onAuthStateChanged,
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider,
-  signInWithPopup, signOut as fbSignOut, sendPasswordResetEmail, type User,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, type User,
 } from "firebase/auth";
 import {
   doc, setDoc, getDoc, onSnapshot, collection, deleteDoc, query, orderBy,
@@ -104,7 +103,6 @@ interface AccountContextValue {
   deleteProject: (id: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  continueWithGoogle: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   /** Starts a payment and sends the browser to the payment page. */
@@ -148,13 +146,22 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Make sure every account has a user record.
+  // Every account gets a document in `users`, created by the server on sign-up and refreshed on sign-in.
   useEffect(() => {
-    if (!user || !db) return;
-    const userRef = doc(db, "users", user.uid);
-    getDoc(userRef)
-      .then((snap) => (snap.exists() ? undefined : setDoc(userRef, { createdAt: new Date().toISOString() })))
-      .catch(() => undefined);
+    if (!user) return;
+    authedFetch("/api/account/init", { method: "POST" })
+      .then((res) => {
+        if (!res.ok) throw new Error(String(res.status));
+      })
+      .catch(async () => {
+        // Server unreachable: create a basic record from the app (the rules forbid setting a role here).
+        if (!db) return;
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef).catch(() => null);
+        if (snap && !snap.exists()) {
+          await setDoc(userRef, { email: user.email || "", createdAt: new Date().toISOString() }).catch(() => undefined);
+        }
+      });
   }, [user?.uid]);
 
   // With a paid plan, load cloud progress and merge in anything recorded on this device.
@@ -258,11 +265,6 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password);
   }, []);
 
-  const continueWithGoogle = useCallback(async () => {
-    if (!auth) throw new Error("auth_unavailable");
-    await signInWithPopup(auth, new GoogleAuthProvider());
-  }, []);
-
   const resetPassword = useCallback(async (email: string) => {
     if (!auth) throw new Error("auth_unavailable");
     await sendPasswordResetEmail(auth, email);
@@ -300,9 +302,9 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AccountContextValue>(() => ({
     ready, user, cloudSync, isGuest: !user, access, hasPlan, entitlements,
     progress, updateProgress, projects, saveProject, deleteProject,
-    signUpWithEmail, signInWithEmail, continueWithGoogle, resetPassword, signOut, checkout, authedFetch,
+    signUpWithEmail, signInWithEmail, resetPassword, signOut, checkout, authedFetch,
   }), [ready, user, cloudSync, access, hasPlan, entitlements, progress, updateProgress, projects, saveProject,
-    deleteProject, signUpWithEmail, signInWithEmail, continueWithGoogle, resetPassword, signOut, checkout, authedFetch]);
+    deleteProject, signUpWithEmail, signInWithEmail, resetPassword, signOut, checkout, authedFetch]);
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }

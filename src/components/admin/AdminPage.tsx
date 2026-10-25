@@ -4,7 +4,8 @@ import { useAccount } from "../../lib/account";
 import { useSystemTheme } from "../../lib/theme";
 import { Spinner } from "../ui";
 import { CoursesSection, PaymentsSection, PayoutsSection, TutorsSection } from "./sections";
-import { ADMIN_KEY_STORAGE, storedAdminKey, useAdminApi, type AdminCall } from "./useAdminApi";
+import { useAdminApi, type AdminCall } from "./useAdminApi";
+import { AccountForm } from "../AccountForm";
 
 const AdminPortal = lazy(() => import("../AdminPortal").then((m) => ({ default: m.AdminPortal })));
 
@@ -19,9 +20,9 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "partners", label: "Partners", icon: Building2 },
 ];
 
-/** ProPath admin: visible to admin accounts, or with the backup admin key. */
+/** ProPath admin: for accounts marked `role: "admin"` in the Firebase `users` collection. */
 export function AdminPage({ onExit }: { onExit: () => void }) {
-  const { ready } = useAccount();
+  const { ready, user } = useAccount();
   const call = useAdminApi();
   const theme = useSystemTheme();
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -34,10 +35,10 @@ export function AdminPage({ onExit }: { onExit: () => void }) {
 
   useEffect(() => {
     if (ready) check();
-  }, [ready]);
+  }, [ready, user?.uid]);
 
   if (allowed === null) return <div className="flex justify-center py-20"><Spinner className="w-8 h-8" /></div>;
-  if (!allowed) return <AdminKeyGate onUnlocked={check} />;
+  if (!allowed) return <NotAdmin signedIn={Boolean(user)} />;
 
   return (
     <div className="flex flex-wrap gap-8 items-start">
@@ -74,33 +75,23 @@ export function AdminPage({ onExit }: { onExit: () => void }) {
   );
 }
 
-function AdminKeyGate({ onUnlocked }: { onUnlocked: () => void }) {
-  const [key, setKey] = useState(storedAdminKey());
-  const [error, setError] = useState(false);
+function NotAdmin({ signedIn }: { signedIn: boolean }) {
   return (
-    <form
-      className="max-w-md mx-auto pp-card p-6 flex flex-col gap-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        try {
-          sessionStorage.setItem(ADMIN_KEY_STORAGE, key.trim());
-        } catch {
-          // ignore
-        }
-        setError(true);
-        onUnlocked();
-      }}
-    >
+    <div className="max-w-md mx-auto pp-card p-6 flex flex-col gap-4">
       <ShieldCheck className="w-8 h-8 text-path" aria-hidden="true" />
       <h1 className="font-display text-2xl font-semibold">Admin access</h1>
-      <p className="text-sm text-mist">Sign in with an admin account, or enter the admin key.</p>
-      <div>
-        <label className="pp-label" htmlFor="admin-key">Admin key</label>
-        <input id="admin-key" type="password" className="pp-input" value={key} onChange={(e) => setKey(e.target.value)} autoComplete="off" />
-      </div>
-      {error && storedAdminKey() && <p className="text-sm text-danger-text" role="alert">That key wasn't accepted.</p>}
-      <button type="submit" className="pp-btn pp-btn-primary" disabled={!key.trim()}>Continue</button>
-    </form>
+      {signedIn ? (
+        <p className="text-body">
+          This account isn't an admin. To make it one, open the Firebase console, go to Firestore, the <code>users</code> collection,
+          and set the field <code>role</code> to <code>admin</code> on this account's document. Then reload this page.
+        </p>
+      ) : (
+        <>
+          <p className="text-body">Sign in with an admin account.</p>
+          <AccountForm language="english" />
+        </>
+      )}
+    </div>
   );
 }
 

@@ -27,7 +27,7 @@ function errorMessage(code: string | undefined, fr: boolean) {
 
 export function AccountForm({ language, onDone }: { language: Lang; onDone?: () => void }) {
   const fr = language === "french";
-  const { signUpWithEmail, signInWithEmail, continueWithGoogle, resetPassword } = useAccount();
+  const { signUpWithEmail, signInWithEmail, resetPassword } = useAccount();
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,12 +117,6 @@ export function AccountForm({ language, onDone }: { language: Lang; onDone?: () 
           </button>
         )}
       </form>
-      <div className="flex items-center gap-3 text-xs text-dim">
-        <span className="flex-1 h-px bg-ink-700" />{fr ? "ou" : "or"}<span className="flex-1 h-px bg-ink-700" />
-      </div>
-      <button type="button" className="pp-btn pp-btn-secondary" onClick={() => run(continueWithGoogle)} disabled={busy}>
-        {fr ? "Continuer avec Google" : "Continue with Google"}
-      </button>
       {mode === "signup" && (
         <p className="text-xs text-dim">
           {fr ? "Vos résultats d'évaluation sur cet appareil sont conservés." : "Your assessment results on this device are kept."}

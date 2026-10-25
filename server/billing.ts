@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { randomBytes } from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb, getAccess, isAdminEmail, isLocalDev, requireAccount, requireAdmin, rateLimit } from "./auth";
+import { adminDb, ensureUserRecord, getAccess, isAdminUser, isLocalDev, requireAccount, requireAdmin, rateLimit } from "./auth";
 import { chapterAccess } from "./tutors";
 import { chapterEntitlement, fullEntitlement, TUTOR_SHARE, type TutorCourse } from "../src/marketplace/types";
 
@@ -370,7 +370,18 @@ billingRouter.post("/api/pay/test/:id", requireAccount, async (req, res) => {
 /** Lets the app show admin tools only to admins. */
 billingRouter.get("/api/admin/me", async (req, res) => {
   const user = req.user;
-  res.json({ admin: Boolean(user && !user.anonymous && isAdminEmail(user.email)) });
+  res.json({ admin: Boolean(user && !user.anonymous && (await isAdminUser(user.uid))) });
+});
+
+/** Creates or refreshes the signed-in account's document in `users`. */
+billingRouter.post("/api/account/init", requireAccount, async (req, res) => {
+  try {
+    const role = await ensureUserRecord(req.user!);
+    res.json({ ok: true, admin: role === "admin" });
+  } catch (err: any) {
+    console.error("[account] init:", err.message);
+    res.status(500).json({ error: "server_error" });
+  }
 });
 
 billingRouter.get("/api/admin/pricing", requireAdmin, async (_req, res) => {
