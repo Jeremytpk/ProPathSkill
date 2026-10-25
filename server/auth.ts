@@ -12,6 +12,20 @@ import firebaseConfig from "../firebase-applet-config.json";
  * or GOOGLE_APPLICATION_CREDENTIALS to its path.
  */
 
+/**
+ * Hosting dashboards often flatten a pasted private key onto one line (spaces or literal "\n"
+ * instead of line breaks). Rebuild the standard PEM layout so Firebase can read it.
+ */
+function normalizePrivateKey(raw?: string) {
+  if (!raw) return undefined;
+  const key = raw.trim().replace(/^"|"$/g, "").replace(/\\n/g, "\n");
+  const match = key.match(/-----BEGIN PRIVATE KEY-----([\s\S]*?)-----END PRIVATE KEY-----/);
+  if (!match) return key;
+  const body = match[1].replace(/\s+/g, "");
+  const lines = body.match(/.{1,64}/g) || [];
+  return `-----BEGIN PRIVATE KEY-----\n${lines.join("\n")}\n-----END PRIVATE KEY-----\n`;
+}
+
 let adminApp: App;
 let firebaseInitError: string | null = null;
 export let adminDb: Firestore | null = null;
@@ -20,7 +34,7 @@ try {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
   // Separate variables fit Netlify's 4 KB limit on function environment variables better than the whole JSON.
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY);
   if (clientEmail && privateKey) {
     adminApp = initializeApp({ credential: cert({ projectId: firebaseConfig.projectId, clientEmail, privateKey }), projectId: firebaseConfig.projectId });
   } else if (serviceAccount) {
