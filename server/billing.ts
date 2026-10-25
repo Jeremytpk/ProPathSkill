@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { randomBytes } from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb, getAccess, isAdminEmail, requireAccount, requireAdmin, rateLimit } from "./auth";
+import { adminDb, getAccess, isAdminEmail, isLocalDev, requireAccount, requireAdmin, rateLimit } from "./auth";
 import { chapterAccess } from "./tutors";
 import { chapterEntitlement, fullEntitlement, TUTOR_SHARE, type TutorCourse } from "../src/marketplace/types";
 
@@ -52,7 +52,7 @@ export async function getPricing(countryCode: string): Promise<CountryPricing> {
 const CINETPAY_URL = "https://api-checkout.cinetpay.com/v2/payment";
 const cinetpayConfigured = () => Boolean(process.env.CINETPAY_API_KEY && process.env.CINETPAY_SITE_ID);
 /** Simulated payments for local development, never in production. */
-const testMode = () => !cinetpayConfigured() && process.env.NODE_ENV !== "production";
+const testMode = () => !cinetpayConfigured() && isLocalDev();
 
 /** Website address, where people come back after paying. */
 function appUrl(req: Request) {

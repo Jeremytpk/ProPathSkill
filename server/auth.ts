@@ -67,7 +67,14 @@ export interface Access {
   expiresAt: string | null;
 }
 
-const devPlan = process.env.NODE_ENV !== "production" ? (process.env.PROPATH_DEV_PLAN as PlanName | undefined) : undefined;
+/**
+ * Development-only shortcuts (simulated payments, dev plans) must never run on a live server.
+ * Hosted functions don't always set NODE_ENV, so being on Netlify/AWS Lambda counts as live too.
+ */
+export const isLocalDev = () =>
+  process.env.NODE_ENV !== "production" && !process.env.AWS_LAMBDA_FUNCTION_NAME && !process.env.NETLIFY;
+
+const devPlan = isLocalDev() ? (process.env.PROPATH_DEV_PLAN as PlanName | undefined) : undefined;
 
 /** The user's current plan, from their subscription record (written only by the server). */
 export async function getAccess(uid: string): Promise<Access> {
