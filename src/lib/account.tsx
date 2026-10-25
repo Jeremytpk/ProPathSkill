@@ -146,22 +146,27 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Every account gets a document in `users`, created by the server on sign-up and refreshed on sign-in.
+  // Every account gets a document in `users`. The app creates it directly (the rules allow
+  // email and dates, never a role), then the server adds the default role and sign-in time.
   useEffect(() => {
     if (!user) return;
-    authedFetch("/api/account/init", { method: "POST" })
-      .then((res) => {
-        if (!res.ok) throw new Error(String(res.status));
-      })
-      .catch(async () => {
-        // Server unreachable: create a basic record from the app (the rules forbid setting a role here).
-        if (!db) return;
+    (async () => {
+      if (db) {
         const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef).catch(() => null);
-        if (snap && !snap.exists()) {
-          await setDoc(userRef, { email: user.email || "", createdAt: new Date().toISOString() }).catch(() => undefined);
+        try {
+          const snap = await getDoc(userRef);
+          const now = new Date().toISOString();
+          if (!snap.exists()) {
+            await setDoc(userRef, { email: user.email || "", createdAt: now, lastLoginAt: now });
+          } else {
+            await setDoc(userRef, { email: user.email || "", lastLoginAt: now }, { merge: true });
+          }
+        } catch (err) {
+          console.warn("Could not save the account record:", err);
         }
-      });
+      }
+      authedFetch("/api/account/init", { method: "POST" }).catch(() => undefined);
+    })();
   }, [user?.uid]);
 
   // With a paid plan, load cloud progress and merge in anything recorded on this device.

@@ -377,6 +377,8 @@ billingRouter.get("/api/admin/me", async (req, res) => {
 billingRouter.post("/api/account/init", requireAccount, async (req, res) => {
   try {
     const role = await ensureUserRecord(req.user!);
+    // Without Firebase credentials nothing was saved: say so, so the app saves the record itself.
+    if (role === null) return res.status(503).json({ error: "accounts_not_configured" });
     res.json({ ok: true, admin: role === "admin" });
   } catch (err: any) {
     console.error("[account] init:", err.message);
