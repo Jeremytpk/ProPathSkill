@@ -2,44 +2,11 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { attachUser } from "./server/auth";
-import { billingRouter } from "./server/billing";
-import { careerRouter } from "./server/career";
-import { coursesRouter } from "./server/courses";
-import { projectsRouter } from "./server/projects";
-import { learningRouter } from "./server/learning";
-import { tutorsRouter } from "./server/tutors";
-import { payoutsRouter } from "./server/payouts";
+import { createApp } from "./server/app";
 
-const app = express();
-app.set("trust proxy", true);
-// The website may be hosted elsewhere (e.g. Netlify); only listed origins may call the API from a browser.
-const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean);
-app.use("/api", (req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, x-admin-key");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Max-Age", "86400");
-  }
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: false }));
-
+/** Local and self-hosted server. On Netlify, the same app runs as functions (netlify/functions). */
+const app = createApp();
 const PORT = Number(process.env.PORT) || 3000;
-
-app.use("/api", attachUser);
-app.use(careerRouter);
-app.use(coursesRouter);
-app.use(projectsRouter);
-app.use(learningRouter);
-app.use(tutorsRouter);
-app.use(payoutsRouter);
-app.use(billingRouter);
 
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {

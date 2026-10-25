@@ -17,14 +17,19 @@ export let adminDb: Firestore | null = null;
 
 try {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (serviceAccount) {
+  // Separate variables fit Netlify's 4 KB limit on function environment variables better than the whole JSON.
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (clientEmail && privateKey) {
+    adminApp = initializeApp({ credential: cert({ projectId: firebaseConfig.projectId, clientEmail, privateKey }), projectId: firebaseConfig.projectId });
+  } else if (serviceAccount) {
     adminApp = initializeApp({ credential: cert(JSON.parse(serviceAccount)), projectId: firebaseConfig.projectId });
   } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     adminApp = initializeApp({ credential: applicationDefault(), projectId: firebaseConfig.projectId });
   } else {
     adminApp = initializeApp({ projectId: firebaseConfig.projectId });
   }
-  if (serviceAccount || process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  if ((clientEmail && privateKey) || serviceAccount || process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     adminDb = getFirestore(adminApp, firebaseConfig.firestoreDatabaseId);
   } else {
     console.log("No Firebase service account configured. Membership checks are unavailable.");

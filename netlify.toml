@@ -1,13 +1,25 @@
-# The ProPath website. The server runs on Render; set VITE_API_URL in Netlify
-# (Site configuration > Environment variables) to the Render address, e.g. https://propath-api.onrender.com
+# ProPath on Netlify: the website plus the API as functions.
+# Set the server's environment variables in Netlify (Site configuration > Environment variables).
 [build]
   command = "npx vite build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
 
-# Single-page app: every route serves index.html.
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["firebase-admin", "@anthropic-ai/sdk", "express", "serverless-http"]
+
+# API requests go to the API function.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Single-page app: every other route serves index.html.
 [[redirects]]
   from = "/*"
   to = "/index.html"

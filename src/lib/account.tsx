@@ -284,7 +284,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     if (!headers.has("Content-Type") && init.body) headers.set("Content-Type", "application/json");
     const token = await auth?.currentUser?.getIdToken().catch(() => null);
     if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(apiUrl(input), { ...init, headers });
+    const res = await fetch(apiUrl(input), { ...init, headers });
+    return res.status === 202 ? waitForJob(res, headers) : res;
   }, []);
 
   const checkout = useCallback(async (request: CheckoutRequest) => {
@@ -304,6 +305,30 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     deleteProject, signUpWithEmail, signInWithEmail, continueWithGoogle, resetPassword, signOut, checkout, authedFetch]);
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
+}
+
+/**
+ * Long AI requests run as background jobs on Netlify: the server answers 202 with a job ID.
+ * Wait for the job, then hand back its response as if the request had returned it directly.
+ */
+async function waitForJob(accepted: Response, headers: Headers): Promise<Response> {
+  const { jobId } = await accepted.clone().json().catch(() => ({ jobId: null }));
+  if (!jobId) return accepted;
+  const deadline = Date.now() + 15 * 60 * 1000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 2000));
+    // Refresh the token on each check: long jobs can outlast it.
+    const token = await auth?.currentUser?.getIdToken().catch(() => null);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    const res = await fetch(apiUrl(`/api/jobs/${jobId}`), { headers }).catch(() => null);
+    if (!res || !res.ok) continue;
+    const job = await res.json();
+    if (job.status === "done") {
+      return new Response(job.body, { status: job.statusCode, headers: { "Content-Type": "application/json" } });
+    }
+    if (job.status === "failed") break;
+  }
+  return new Response(JSON.stringify({ error: "ai_unavailable" }), { status: 503, headers: { "Content-Type": "application/json" } });
 }
 
 /** Combines cloud and device progress, keeping the most complete record of each part. */

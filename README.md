@@ -27,6 +27,18 @@ Requires Node.js 20+.
 2. Copy `.env.example` to `.env` and set `ANTHROPIC_API_KEY`. For plans, payments and the Project Manager, also set `FIREBASE_SERVICE_ACCOUNT` and `PROPATH_ADMIN_KEY`. Without CinetPay keys, local development simulates payments.
 3. `npm run dev`, then open http://localhost:3000
 
+## Hosting on Netlify
+
+The website and the API both run on Netlify (`netlify.toml`):
+
+- `netlify/functions/api.ts` runs the Express API as a function; `/api/*` is routed to it.
+- Netlify functions must answer within about 10 seconds, but ProPath AI requests take 15–90 seconds. Those requests (career report, learning plan, courses, tutor, project tools) are queued in Firestore (`jobs`) and run by `netlify/functions/ai-worker-background.ts`, a background function with up to 15 minutes. The app waits for the result automatically (`authedFetch`).
+
+Set these in Netlify under **Site configuration → Environment variables** (Netlify limits function variables to 4 KB in total, so use the two Firebase variables rather than the whole JSON):
+`ANTHROPIC_API_KEY`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `PROPATH_ADMIN_EMAILS`, `PROPATH_ADMIN_KEY`, `APP_URL`, and later `CINETPAY_API_KEY`, `CINETPAY_SITE_ID`.
+
+Locally, `npm run dev` runs everything in one server; set `PROPATH_ASYNC_JOBS=true` to try the job flow.
+
 ## Firebase setup
 
 In the Firebase console for the project:
