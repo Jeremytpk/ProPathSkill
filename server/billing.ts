@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { randomBytes } from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb, ensureUserRecord, getAccess, isAdminUser, isLocalDev, requireAccount, requireAdmin, rateLimit } from "./auth";
+import { adminDb, configStatus, ensureUserRecord, getAccess, isAdminUser, isLocalDev, requireAccount, requireAdmin, rateLimit } from "./auth";
 import { chapterAccess } from "./tutors";
 import { chapterEntitlement, fullEntitlement, TUTOR_SHARE, type TutorCourse } from "../src/marketplace/types";
 
@@ -366,6 +366,11 @@ billingRouter.post("/api/pay/test/:id", requireAccount, async (req, res) => {
 });
 
 // Admin ---------------------------------------------------------------------
+
+/** Which settings the server can see (yes/no only), to diagnose hosting setup. */
+billingRouter.get("/api/health", (_req, res) => {
+  res.json({ ok: true, ...configStatus() });
+});
 
 /** Lets the app show admin tools only to admins. */
 billingRouter.get("/api/admin/me", async (req, res) => {

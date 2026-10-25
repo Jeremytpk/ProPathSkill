@@ -13,6 +13,7 @@ import firebaseConfig from "../firebase-applet-config.json";
  */
 
 let adminApp: App;
+let firebaseInitError: string | null = null;
 export let adminDb: Firestore | null = null;
 
 try {
@@ -34,8 +35,25 @@ try {
   } else {
     console.log("No Firebase service account configured. Membership checks are unavailable.");
   }
-} catch (err) {
+} catch (err: any) {
+  firebaseInitError = String(err?.message || err).slice(0, 200);
   console.error("Failed to initialise Firebase Admin:", err);
+}
+
+/** Configuration status for /api/health: yes/no flags only, never values. */
+export function configStatus() {
+  const key = process.env.FIREBASE_PRIVATE_KEY || "";
+  return {
+    firebaseConnected: Boolean(adminDb),
+    firebaseInitError,
+    hasFirebaseClientEmail: Boolean(process.env.FIREBASE_CLIENT_EMAIL),
+    hasFirebasePrivateKey: Boolean(key),
+    privateKeyLooksValid: key.includes("BEGIN PRIVATE KEY") && key.includes("END PRIVATE KEY"),
+    privateKeyHasLineBreaks: key.includes("\n") || key.includes("\\n"),
+    hasFirebaseServiceAccountJson: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
+    hasAnthropicKey: Boolean(process.env.ANTHROPIC_API_KEY),
+    hasAppUrl: Boolean(process.env.APP_URL),
+  };
 }
 
 export interface RequestUser {
